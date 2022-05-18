@@ -4,9 +4,6 @@
       "module": "commonjs",
       "typeRoots": ["./@types.*"],
       "baseUrl": ".",
-      "strictNullChecks": true,
-      //"paths": {
-      //  "*" :["./@types.customnpcs.d.ts"]
-      //}
+      "strictNullChecks": true
     }
   }
