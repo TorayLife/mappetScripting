@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "typeRoots": ["./@types.*"],
+      "baseUrl": ".",
+      "strictNullChecks": true,
+      //"paths": {
+      //  "*" :["./@types.customnpcs.d.ts"]
+      //}
+    }
+  }
