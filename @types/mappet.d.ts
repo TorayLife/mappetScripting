@@ -227,7 +227,7 @@ declare interface IScriptEvent{
     readonly player:IScriptPlayer
     readonly script:string
     readonly server:IScriptServer
-    readonly subject:IScriptEntity|IScriptPlayer
+    readonly subject:IScriptEntity
     getValue(key:string):object
     readonly values:any
     send(message:string):void
