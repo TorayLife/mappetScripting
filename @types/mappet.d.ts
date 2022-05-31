@@ -228,7 +228,7 @@ declare interface IScriptEvent{
     readonly script:string
     readonly server:IScriptServer
     readonly subject:IScriptEntity
-    getValue(key:string):object
+    getValue(key:string):any
     readonly values:any
     send(message:string):void
     scheduleScript(delay:number, func:Function):void
