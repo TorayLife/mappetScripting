@@ -298,6 +298,8 @@ declare interface IScriptItemStack{
 declare interface IScriptNpc extends IScriptEntity{
     readonly mappetNpc:any
     readonly npcId:string
+    getNpcState():string
+    setNpcState(stateName:string):void
 }
 
 declare interface IScriptPlayer extends IScriptEntity{
@@ -313,12 +315,16 @@ declare interface IScriptPlayer extends IScriptEntity{
     readonly quests:IMappetQuests
     readonly skin:string
     readonly UIContext:IMappetUIContext
+    readonly hunger:number
+    readonly saturation:number
     getXpLevel():number
     getXpPoints():number
     openUI(builder:IMappetUIBuilder, defaultData:boolean):boolean
     openUI(builder:IMappetUIBuilder):boolean
+    playSound(event:string, category:string, x:number, y:number, z:number, volume:number, pitch:number):void
     playSound(event:string, x:number, y:number, z:number, volume:number, pitch:number):void
     playSound(event:string, x:number, y:number, z:number):void
+    playStaticSound(event:string, category:string, volume:number, pitch:number):void
     playStaticSound(event:string, volume:number, pitch:number):void
     send(message:string):void
     sendActionBar(title:string):void
