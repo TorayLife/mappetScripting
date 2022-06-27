@@ -62,7 +62,7 @@ declare interface IMappetUIBuilder{
 
 declare interface IMappetUIContext{
     get(id:string):anyUIComponent
-    readonly context:IMappetUIContext
+    readonly context:string
     readonly data:INBTCompound
     readonly hotkey:string
     readonly last:string
