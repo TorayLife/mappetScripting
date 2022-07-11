@@ -81,7 +81,7 @@ declare interface INBT{
     stringify():string
 }
 
-declare interface INBTCompound{
+declare interface INBTCompound extends INBT{
     getBoolean(key:string):boolean
     getByte(key:string):number
     getCompound(key:string):INBTCompound
@@ -229,6 +229,7 @@ declare interface IScriptEvent{
     readonly server:IScriptServer
     readonly subject:IScriptEntity
     getValue(key:string):any
+    setValue(key:string, value:any):void
     readonly values:any
     send(message:string):void
     scheduleScript(delay:number, func:Function):void
