@@ -511,7 +511,7 @@ declare interface UILabelComponent extends UIComponent{
     background(background:number):UILabelComponent
     color(color:number, shadow:boolean):UILabelComponent
     color(color:number):UILabelComponent
-    label(label:number):UILabelComponent
+    label(label:string):UILabelComponent
     labelAnchor(anchorX:number, anchorY:number):UILabelComponent
     labelAnchor(anchor:number):UILabelComponent
     label(anchor:number):UILabelComponent
