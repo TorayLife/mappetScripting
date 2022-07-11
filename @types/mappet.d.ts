@@ -61,7 +61,7 @@ declare interface IMappetUIBuilder{
 }
 
 declare interface IMappetUIContext{
-    get(id:string):anyUIComponent
+    get(id:string):any
     readonly context:string
     readonly data:INBTCompound
     readonly hotkey:string
@@ -604,19 +604,6 @@ declare interface UITrackpadComponent extends UIComponent{
 }
 
 //Utils
-type anyUIComponent = UITrackpadComponent
-    |UIToggleComponent
-    |UITextboxComponent
-    |UIMorphComponent
-    |UITextComponent
-    |UIStringListComponent
-    |UIStackComponent
-    |UILayoutComponent
-    |UILabelComponent
-    |UIGraphicsComponent
-    |UIButtonComponent
-    |UIIconButtonComponent
-    |UIClickComponent
 
 type ScriptVector = {
     readonly x:number,
