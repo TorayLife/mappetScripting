@@ -261,7 +261,7 @@ declare interface IScriptFactory{
     createUI():IMappetUIBuilder
     dump(object:object, simple:boolean):string
     dump(object:object):string
-    get(key:string):string
+    get(key:string):any
     getParticleType(type:string):EnumParticleTypes
     getPotion(type:string):Potion
     set(key:string, object:object):void
