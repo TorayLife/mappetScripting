@@ -4,7 +4,6 @@ declare interface IMappetQuests{
     add(questID:string):boolean
     complete(questID:string):boolean
     decline(questID:string):boolean
-    //TODO
     readonly ids:number[]
     has(questID:string):boolean
     isComplete(questID:string):boolean
@@ -16,7 +15,6 @@ declare interface IMappetStates{
     getNumber(stateID:string):number
     getString(stateID:string):string
     has(stateID:string):boolean
-    //TODO
     keys():string[]
     reset(stateID:string):void
     resetMasked(stateID:string):void
@@ -156,7 +154,6 @@ declare interface IScriptBlockState{
 }
 
 declare interface IScriptEntity{
-
     readonly x:number
     readonly y:number
     readonly z:number
@@ -215,6 +212,9 @@ declare interface IScriptEntity{
     setSpeed(speed:number):void
     swingArm(arm:0|1):void
     swingArm():void
+
+    // 0.2.1
+    readonly morph:AbstractMorph
 }
 
 declare interface IScriptEvent{
