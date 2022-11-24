@@ -151,6 +151,10 @@ declare interface IScriptBlockState{
     isAir():boolean
     isSame(blockState:IScriptBlockState):boolean
     isSameBlock(blockState:IScriptBlockState):boolean
+
+    // 0.2.2
+    isOpaque():boolean
+    hasCollision():boolean
 }
 
 declare interface IScriptEntity{
@@ -215,6 +219,10 @@ declare interface IScriptEntity{
 
     // 0.2.1
     readonly morph:AbstractMorph
+
+    // 0.2.2
+    isOnGround():boolean
+    getCombinedLight():number
 }
 
 declare interface IScriptEvent{
@@ -294,6 +302,9 @@ declare interface IScriptItemStack{
     hasData():boolean
     isEmpty():boolean
     serialize():INBTCompound
+
+    // 0.2.2
+    readonly maxCount:number
 }
 
 declare interface IScriptNpc extends IScriptEntity{
@@ -335,6 +346,10 @@ declare interface IScriptPlayer extends IScriptEntity{
     sendTitleDurations(fadeIn:number, idle:number, fadeOut:number):void
     setupHUD(id:string):boolean
     setXp(level:number, points:number)
+
+    // 0.2.2
+    stopSound(event:string, category:string):void
+    stopAllSounds():void
 }
 
 declare interface  IScriptRayTrace{
@@ -394,6 +409,13 @@ declare interface IScriptWorld{
     spawnNpc(id:string, state:string, x:number, y:number, z:number):IScriptEntity
     spawnParticles(type:EnumParticleTypes, longDistance:boolean, x:number, y:number, z:number, n:number, dx:number, dy:number, dz:number, speed:number, args:number):void
     spawnParticles(player:IScriptPlayer, type:EnumParticleTypes, longDistance:boolean, x:number, y:number, z:number, n:number, dx:number, dy:number, dz:number, speed:number, args:number):void
+
+    // 0.2.2
+    stopSound(event:string, category:string):void
+    stopAllSounds():void
+    rayTrace(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number):IScriptRayTrace
+    rayTraceBlocks(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number):IScriptRayTrace
+    explode(exploder:IScriptEntity, x:number, y:number, z:number, distance:number, blazeGround:boolean, destroyTerrain:boolean):void
 }
 
 //UI API
