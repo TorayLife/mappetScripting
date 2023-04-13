@@ -106,6 +106,11 @@ declare interface INBTCompound extends INBT{
     setNBT(key:string, nbt:string):boolean
     setShort(key:string, value:number):void
     setString(key:string, value:string):void
+
+    // 0.4
+    get(key:string):any
+    equals(compound:INBTCompound):boolean
+
 }
 
 declare interface INBTList{
@@ -142,6 +147,9 @@ declare interface INBTList{
     setLong(index:number, value:number):void
     setShort(index:number, value:number):void
     setString(index:number, value:string):void
+
+    // 0.4
+    toArray():any[]
 }
 
 declare interface IScriptBlockState{
@@ -192,7 +200,6 @@ declare interface IScriptEntity{
     readonly width:number
     readonly yaw:number
     readonly yawHead:number
-    readonly world:IScriptWorld
     hasPotion(potion:Potion):boolean
     isAIEnabled():boolean
     isBurning():boolean
@@ -223,6 +230,35 @@ declare interface IScriptEntity{
     // 0.2.2
     isOnGround():boolean
     getCombinedLight():number
+
+    // 0.4
+    readonly world:IScriptWorld
+    addMotion(x:number, y:number, z:number):void
+    readonly eyeHeight:number
+    isInWater():boolean
+    helmet: IScriptItemStack
+    chestPlate: IScriptItemStack
+    leggins: IScriptItemStack
+    boots: IScriptItemStack
+    setArmor(helmet: IScriptItemStack, chestplate: IScriptItemStack, leggings: IScriptItemStack, boots: IScriptItemStack)
+    clearArmor():void
+    isEntityInRadius(entity: IScriptEntity, radius:number):boolean
+    isInBlock(x:number, y:number, z:number):boolean
+    isInArea(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number)
+    mount(entity:IScriptEntity):void
+    dismount():void
+    dropItem(amount:number):IScriptEntity
+    dropItem(itemStack: IScriptItemStack):IScriptEntity
+    dropItem():IScriptEntity
+    setModifier(modifierName:string, value:number):void
+    getModifier(modifierName:string):number
+    removeModifier(modifierName:string):void
+    removeAllModifiers():void
+    displayMorph(morph: string, expiration: number, x:number, y:number, z:number):void
+    displayMorph(morph: string, expiration: number, x:number, y:number, z:number, yaw:number, pitch:number, rotate:boolean):void
+    displayMorph(morph: string, expiration: number, x:number, y:number, z:number, yaw:number, pitch:number, rotate:boolean, player:IScriptPlayer):void
+    displayMorph(morph: string, expiration: number, x:number, y:number, z:number, rotate:boolean):void
+    shootBBGunProjectile(gunPropsNBT:string):IScriptEntity
 }
 
 declare interface IScriptEvent{
@@ -273,6 +309,28 @@ declare interface IScriptFactory{
     getParticleType(type:string):EnumParticleTypes
     getPotion(type:string):Potion
     set(key:string, object:object):void
+
+    //0.4
+    random(max:number):number
+    random(min: number, max:number):number
+    random(min: number, max:number, seed:number):number
+    style(codes:string):string
+    vector2():Vector2d
+    vector2(v:Vector2d):Vector2d
+    vector2(x:number, y:number):Vector2d
+    vector3():Vector3d
+    vector3(v:Vector3d):Vector3d
+    vector3(x:number, y:number):Vector3d
+    vector3():Vector3d
+    vector3(v:Vector3d):Vector3d
+    vector3(x:number, y:number, z:number):Vector3d
+    vector3():Vector3d
+    vector3(v:Vector3d):Vector3d
+    vector3(x:number, y:number, z:number, w:number):Vector3d
+    matrix3():Matrix3d
+    matrix3(m:Matrix3d):Matrix3d
+    matrix4():Matrix4d
+    matrix4(m:Matrix4d):Matrix4d
 }
 
 declare interface IScriptInventory{
@@ -305,6 +363,21 @@ declare interface IScriptItemStack{
 
     // 0.2.2
     readonly maxCount:number
+
+    // 0.4
+    displayName:string
+    getLore(index:number):string
+    getLoreList():string[]
+    setLore(index:number, lore:string):void
+    addLore(lore:string):void
+    clearAllLores():void
+    clearLore(index:number):void
+    clearAllEnchantments():void
+    getCanDestroyBlocks():string[]
+    addCanDestroyBlock(block:string):void
+    addCanPlaceOnBlock(block:string):void
+    clearAllCanPlaceOnBlocks():void
+    clearCanPlaceOnBlock(block:string):void
 }
 
 declare interface IScriptNpc extends IScriptEntity{
@@ -312,6 +385,20 @@ declare interface IScriptNpc extends IScriptEntity{
     readonly npcId:string
     getNpcState():string
     setNpcState(stateName:string):void
+
+    //v 0.4
+    canPickUpLoot(canPickUpLoot:boolean):void
+    follow(target:string):void
+    setOnTickTrigger(scriptName:string, functionName:string, frequency:number, blockIndex:number):void
+    addOnTickTrigger(scriptName:string, functionName:string, frequency:number):void
+    clearOnTickTriggers():void
+    setOnInteractTrigger(scriptName:string, functionName:string, blockIndex:number):void
+    addOnInteractTrigger(scriptName:string, functionName:string):void
+    clearOnInteractTrigger():void
+    setPatrol(x:number, y:number, z:number, scriptName:string, functionName:string, patrolIndex:number):void
+    addPatrol(x:number, y:number, z:number, scriptName:string, functionName:string):void
+    clearPatrolPoints():void
+    getFaction():string
 }
 
 declare interface IScriptPlayer extends IScriptEntity{
@@ -350,6 +437,19 @@ declare interface IScriptPlayer extends IScriptEntity{
     // 0.2.2
     stopSound(event:string, category:string):void
     stopAllSounds():void
+
+    // 0.4
+    executeCommand(command:string):void
+    isFlying():boolean
+    walkSpeed:number
+    flySpeed:number
+    resetWalkSpeed():void
+    resetFlySpeed():void
+    getCooldown(inventorySlot:number):number
+    getCooldown(item:IScriptItemStack):number
+    setCooldown(inventorySlot:number, ticks:number):void
+    setCooldown(item:IScriptItemStack, ticks:number):void
+    hotbarIndex:number
 }
 
 declare interface  IScriptRayTrace{
@@ -370,6 +470,9 @@ declare interface IScriptServer{
     getPlayer(username:string):IScriptPlayer
     readonly states:IMappetStates
     getWorld(dimension:number):IScriptWorld
+
+    //0.4
+    isOnline(userName:string):boolean
 }
 
 declare interface IScriptTileEntity{
@@ -416,6 +519,15 @@ declare interface IScriptWorld{
     rayTrace(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number):IScriptRayTrace
     rayTraceBlocks(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number):IScriptRayTrace
     explode(exploder:IScriptEntity, x:number, y:number, z:number, distance:number, blazeGround:boolean, destroyTerrain:boolean):void
+
+    // 0.4
+    setModelBlockMorph(nbt:string, x:number, y:number, z:number, force:boolean):void
+    isActive(x:number, y:number, z:number):boolean
+    testForBlock(x:number, y:number, z:number, blockId: string, meta:number):boolean
+    fill(state:IScriptBlockState, x1:number, y1:number, z1:number, x2:number, y2:number, z2:number):void
+    summonFallingBlock(x:number, y:number, z:number, blockId: string, meta:number):IScriptEntity
+    setFallingBlock(x:number, y:number, z:number):IScriptEntity
+    displayMorph(morph:string, expiration:number, x:number, y:number, z:number):void
 }
 
 //UI API
@@ -628,18 +740,36 @@ declare interface UITrackpadComponent extends UIComponent{
 
 //Utils
 
-type ScriptVector = {
-    readonly x:number,
-    readonly y:number,
-    readonly z:number,
+interface ScriptVector {
+    readonly x:number
+    readonly y:number
+    readonly z:number
 }
+
 type Potion = any
 type EnumParticleTypes = any
 type AbstractMorph = any
 
+declare const mappet: IScriptFactory
 
+interface JavaAccessor {
+    type(str:string):any
+    from<T>(any: T[]):T[]
+    extend(a:any, b:any):any
+}
+declare const Java: JavaAccessor
 
+declare interface Vector2d {
+}
 
+declare interface Vector3d {
+}
 
+declare interface Vector4d {
+}
 
+declare interface Matrix3d {
+}
 
+declare interface Matrix4d {
+}

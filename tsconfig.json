@@ -7,6 +7,5 @@
       "strictNullChecks": true,
       "removeComments": false,
       "allowJs": true,
-      "noEmit": true,
     }
   }
