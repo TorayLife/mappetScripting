@@ -2,6 +2,8 @@
 
 Auto completion (IntelliSense) for mappet scripts.
 
+Done with https://github.com/TorayLife/mappet-ts.git
+
 ## How to install?
 
 Download this repo, and open it as a project.
