@@ -1,4 +1,4 @@
-// SCRIPpotentuallyTING API
+// SCRIPTING API
 
 declare interface IScriptTileEntity {
     readonly minecraftTileEntity: TileEntity
@@ -9,11 +9,27 @@ declare interface IScriptTileEntity {
      * Get Minecraft tile entity instance. <b>BEWARE:</b> you need to know the MCP
      * mappings in order to directly call methods on this instance!
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var itemInFirstSlot = c.getWorld().getTileEntity(-218, 101, 199).getMinecraftTileEntity().func_70301_a(0)
+     *
+     *        c.send(itemInFirstSlot)
+     *    }
+     *
      * @returns {@link TileEntity}
      */
     getMinecraftTileEntity(): TileEntity
     /**
      * Get tile entity's ID.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var BlockTileEntity = c.getWorld().getTileEntity(-218, 101, 199)
+     *
+     *        c.send(BlockTileEntity.getId())
+     *    }
      *
      * @returns {@link string}
      */
@@ -22,11 +38,27 @@ declare interface IScriptTileEntity {
      * Check whether this tile entity is invalid (i.e. was removed from the world
      * or unavailable for some reason).
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var BlockTileEntity = c.getWorld().getTileEntity(-218, 101, 199)
+     *
+     *        c.send(BlockTileEntity.isInvalid())
+     *    }
+     *
      * @returns {@link boolean}
      */
     isInvalid(): boolean
     /**
      * Get (a copy of) this tile entity's NBT data.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var BlockTileEntity = c.getWorld().getTileEntity(-218, 101, 199)
+     *
+     *        c.send(BlockTileEntity.getData())
+     *    }
      *
      * @returns {@link INBTCompound}
      */
@@ -34,6 +66,15 @@ declare interface IScriptTileEntity {
     /**
      * Overwrite NBT data of this tile entity. <b>WARNING</b>: use it only if you
      * know what are you doing as this method can corrupt tile entities.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var BlockTileEntity = c.getWorld().getTileEntity(-218, 101, 199)
+     *        var tag = mappet.createCompound('{CookTime:0,x:-218,BurnTime:0,y:101,z:199,Item:[],id:"minecraft:furnace",CookTimeTotal:0,Lock:""}')
+     *
+     *        BlockTileEntity.setData(tag)
+     *    }
      *
      * @param compound INBTCompound
      * @returns {@link void}
@@ -46,6 +87,14 @@ declare interface IScriptTileEntity {
      * <p>There is no setter method as you can directly work with returned
      * NBT compound. Any changes to returned compound <b>will be reflected
      * upon tile entity's data</b>.</p>
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var BlockTileEntity = c.getWorld().getTileEntity(-218, 101, 199)
+     *
+     *        c.send(BlockTileEntity.getTileData())
+     *    }
      *
      * @returns {@link INBTCompound}
      */
@@ -144,9 +193,105 @@ declare interface IScriptBlockState {
 }
 
 declare interface ScriptVector {
-    readonly x: number
-    readonly y: number
-    readonly z: number
+    /**
+     * Convert this vector to an array string
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var subject = c.getSubject();
+     *        var subjectPosition = subject.getPosition();
+     *        c.send("The player is at " + subjectPosition.toArrayString() + "!");
+     *        // The player is at [x, y, z]!
+     *    }
+     *
+     * @returns {@link string}
+     */
+    toArrayString(): string
+}
+
+declare interface ScriptBox {
+    /**
+     * Offsets the box by given coordinates
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var box = mappet.box(-10, 4, -10, 10, 6, 10);
+     *        box.offset(10, 0, 10);
+     *        c.send(box.toString()); // ScriptBox(0.0, 4.0, 0.0, 20.0, 6.0, 20.0)
+     *    }
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @returns {@link void}
+     */
+    offset(x: number, y: number, z: number): void
+    /**
+     * Checks if given coordinates are inside of this box
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var box = mappet.box(-10, 4, -10, 10, 6, 10);
+     *        if (box.contains(0, 4, 0)){
+     *            c.send("this point is inside the box")
+     *        }
+     *        if (box.contains(0, 7, 0)){
+     *            c.send("this point is outside the box")
+     *        }
+     *    }
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @returns {@link boolean}
+     */
+    contains(x: number, y: number, z: number): boolean
+    /**
+     * Checks if given coordinates are inside of this box
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var subject = c.getSubject();
+     *        var subjectPosition = subject.getPosition();
+     *        var box = mappet.box(-10, 4, -10, 10, 6, 10);
+     *        if (box.contains(subjectPosition)){
+     *            c.send("the player in in the box")
+     *        }
+     *    }
+     *
+     * @param vector ScriptVector
+     * @returns {@link boolean}
+     */
+    contains(vector: ScriptVector): boolean
+    /**
+     * Returns a list of positions for blocks in the box that match a given block state in a given world.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var world = c.getWorld();
+     *        var state = mappet.createBlockState("minecraft:stone");
+     *        var box = mappet.box(-10, 4, -10, 10, 6, 10);
+     *        var blockPositions = box.getBlocksPositions(world, state);
+     *
+     *        var blockPositionsString = "[";
+     *        blockPositions.forEach(function(position) {
+     *            blockPositionsString += position.toArrayString() + ", ";
+     *        });
+     *        blockPositionsString = blockPositionsString.substring(0, blockPositionsString.length - 2);
+     *        blockPositionsString += "]";
+     *        print(blockPositions);
+     *    }
+     *
+     * @param scriptWorld ScriptWorld
+     * @param state ScriptBlockState
+     * @returns {@link List} - A list of positions for blocks that match the given block state.
+     */
+    getBlocksPositions(scriptWorld: IScriptWorld, state: IScriptBlockState): List<ScriptVector>
 }
 
 declare interface IScriptPlayer extends IScriptEntity {
@@ -154,6 +299,7 @@ declare interface IScriptPlayer extends IScriptEntity {
     gameMode: number
     readonly inventory: IScriptInventory
     readonly enderChest: IScriptInventory
+    readonly spawnPoint: ScriptVector
     walkSpeed: number
     flySpeed: number
     hotbarIndex: number
@@ -165,6 +311,7 @@ declare interface IScriptPlayer extends IScriptEntity {
     readonly quests: IMappetQuests
     readonly UIContext: IMappetUIContext
     readonly displayedHUDs: INBTCompound
+    readonly globalDisplayedHUDs: INBTCompound
     /**
      * Get Minecraft player entity instance. <b>BEWARE:</b> you need to know the
      * MCP mappings in order to directly call methods on this instance!
@@ -249,6 +396,28 @@ declare interface IScriptPlayer extends IScriptEntity {
      */
     executeCommand(command: string): void
     /**
+     * Sets the player's spawn point.
+     *
+     * @example
+     *    c.getSubject().setSpawnPoint(0, 0, 0);
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @returns {@link void}
+     */
+    setSpawnPoint(x: number, y: number, z: number): void
+    /**
+     * Gets the player's spawn point.
+     *
+     * @example
+     *    var spawnPoint = c.getSubject().getSpawnPoint();
+     *    c.send("Spawn point: " + spawnPoint.x + ", " + spawnPoint.y + ", " + spawnPoint.z);
+     *
+     * @returns {@link ScriptVector}
+     */
+    getSpawnPoint(): ScriptVector
+    /**
      * Returns if the player is flying.
      *
      * @example
@@ -270,6 +439,16 @@ declare interface IScriptPlayer extends IScriptEntity {
      * @returns {@link number}
      */
     getWalkSpeed(): number
+    /**
+     * Allows the player to fly in whatever game mode they're in.
+     *
+     * @example
+     *    c.getSubject().setFlyingEnabled(true);
+     *
+     * @param enabled boolean
+     * @returns {@link void}
+     */
+    setFlyingEnabled(enabled: boolean): void
     /**
      * Returns if the flight speed of the player.
      *
@@ -339,9 +518,9 @@ declare interface IScriptPlayer extends IScriptEntity {
      *    function main(c)
      *    {
      *        var player = c.getSubject();
-     *        var cooldown = player.getCooldown(player.getMainItemInventoryIndex()); // tip: 40 is the offhand slot
+     *        var cooldown = player.getCooldown(40); // tip: 40 is the offhand slot
      *
-     *        c.send(The held item is on cooldown for " + cooldown + " ticks.");
+     *        c.send(The held item cooldown " + ((1 - cooldown) * 100) + " percent expired.");
      *    }
      *
      * @param inventorySlot number
@@ -373,7 +552,7 @@ declare interface IScriptPlayer extends IScriptEntity {
      *    {
      *        var player = c.getSubject();
      *
-     *        player.setCooldown(player.getMainItemInventoryIndex(), 100); // tip: 40 is the offhand slot
+     *        player.setCooldown(player.getHotbarIndex(), 100); // tip: 40 is the offhand slot
      *    }
      *
      * @param inventorySlot number
@@ -390,7 +569,7 @@ declare interface IScriptPlayer extends IScriptEntity {
      *        var player = c.getSubject();
      *        var item = mappet.createItem("minecraft:diamond_sword");
      *
-     *        player.setCooldown(item.getItem(), 100);
+     *        player.setCooldown(item, 100);
      *    }
      *
      * @param item IScriptItemStack
@@ -422,7 +601,7 @@ declare interface IScriptPlayer extends IScriptEntity {
      *        var player = c.getSubject();
      *        var item = mappet.createItem("minecraft:diamond_sword");
      *
-     *        player.resetCooldown(item.getItem());
+     *        player.resetCooldown(item);
      *    }
      *
      * @param item IScriptItemStack
@@ -437,7 +616,7 @@ declare interface IScriptPlayer extends IScriptEntity {
      *    {
      *        var player = c.getSubject();
      *
-     *        player.setCooldown(player.getMainItemInventoryIndex(), 100); //tip: 40 is the offhand slot
+     *        player.setCooldown(player.getHotbarIndex(), 100); //tip: 40 is the offhand slot
      *    }
      *
      * @returns {@link number}
@@ -590,7 +769,7 @@ declare interface IScriptPlayer extends IScriptEntity {
      *
      *    if (s.getXpLevel() < 50)
      *    {
-     *        var section = "§";
+     *        var section = "�";
      *
      *        // Teleport the player out of the area
      *        s.setPosition(10, 4, -15);
@@ -893,7 +1072,7 @@ declare interface IScriptPlayer extends IScriptEntity {
      */
     closeHUD(id: string): void
     /**
-     * Get all HUD scenes that are currently displayed for this player.
+     * Get all HUD scenes (including global HUDs) that are currently displayed for this player.
      *
      * @example
      *    var player = c.getSubject();
@@ -903,6 +1082,17 @@ declare interface IScriptPlayer extends IScriptEntity {
      * @returns {@link INBTCompound}
      */
     getDisplayedHUDs(): INBTCompound
+    /**
+     * Get all global HUD scenes that are currently saved on player and displayed for him and other players.
+     *
+     * @example
+     *    var player = c.getSubject();
+     *    var huds = player.getGlobalDisplayedHUDs();
+     *    print(huds);
+     *
+     * @returns {@link INBTCompound}
+     */
+    getGlobalDisplayedHUDs(): INBTCompound
     /**
      * Plays an Aperture scene for this player.
      *
@@ -929,6 +1119,14 @@ declare interface IScriptNpc extends IScriptEntity {
     readonly npcId: string
     npcState: string
     readonly faction: string
+    readonly steeringOffsets: List<ScriptVector>
+    npcSpeed: number
+    jumpPower: number
+    shadowSize: number
+    xpValue: number
+    pathDistance: number
+    attackRange: number
+    damageDelay: number
     /**
      * Get Mappet entity NPC instance. <b>BEWARE:</b> you need to know the
      * MCP mappings in order to directly call methods on this instance!
@@ -994,97 +1192,422 @@ declare interface IScriptNpc extends IScriptEntity {
      */
     follow(target: string): void
     /**
-     * Sets NPC's tick trigger (Use this if you want to edit an existing `on tick trigger`).
+     * Returns the faction of the NPC as a string
      *
      * @example
-     *    c.getSubject().setOnTickTrigger("ScriptName", "FunctionName", 1, 0);
+     *    c.send(c.getSubject().getFaction())
      *
-     * @param scriptName string
-     * @param functionName string
-     * @param frequency number
-     * @param blockIndex number
+     * @returns {@link string}
+     */
+    getFaction(): string
+    /**
+     * Sets whether the NPC can be steered.
+     *
+     * @example
+     *    c.getSubject().setCanBeSteered(true);
+     *
+     * @param enabled boolean
      * @returns {@link void}
      */
-    setOnTickTrigger(scriptName: string, functionName: string, frequency: number, blockIndex: number): void
+    setCanBeSteered(enabled: boolean): void
     /**
-     * Adds a new `on tick trigger` to the NPC.
+     * Checks if the NPC can be steered.
      *
      * @example
-     *    c.getSubject().addOnTickTrigger("ScriptName", "FunctionName", 1);
+     *    c.getSubject().canBeSteered();
      *
-     * @param scriptName string
-     * @param functionName string
-     * @param frequency number
+     * @returns {@link boolean}
+     */
+    canBeSteered(): boolean
+    /**
+     * Sets the steering offset for the NPC.
+     *
+     * @example
+     *    c.getSubject().setSteeringOffset(index, x, y, z);
+     *
+     * @param index number
+     * @param x number
+     * @param y number
+     * @param z number
      * @returns {@link void}
      */
-    addOnTickTrigger(scriptName: string, functionName: string, frequency: number): void
+    setSteeringOffset(index: number, x: number, y: number, z: number): void
     /**
-     * Removes all `on tick` triggers from the NPC.
+     * Gets the steering offset of the NPC.
      *
      * @example
-     *    c.getSubject().clearOnTickTriggers();
-     *
-     * @returns {@link void}
-     */
-    clearOnTickTriggers(): void
-    /**
-     * Sets NPC's on interaction trigger.
-     *
-     * @example
-     *    c.getSubject().setOnInteractTrigger("ScriptName", "FunctionName", 0);
-     *
-     * @param scriptName string
-     * @param functionName string
-     * @param blockIndex number
-     * @returns {@link void}
-     */
-    setOnInteractTrigger(scriptName: string, functionName: string, blockIndex: number): void
-    /**
-     * Adds NPC's on interaction trigger.
-     *
-     * @example
-     *    c.getSubject().addOnInteractTrigger("ScriptName", "FunctionName");
-     *
-     * @param scriptName string
-     * @param functionName string
-     * @returns {@link void}
-     */
-    addOnInteractTrigger(scriptName: string, functionName: string): void
-    /**
-     * Clears NPC's on interaction triggers.
-     *
-     * @example
-     *    c.getSubject().clearOnInteractTriggers();
-     *
-     * @returns {@link void}
-     */
-    clearOnInteractTriggers(): void
-    /**
-     * Sets NPC's patrol point with a script trigger.
-     *
-     * @example
-     *    c.getSubject().setPatrol(x, y, z, "ScriptName", "FunctionName", 0);
+     *    c.getSubject().addSteeringOffset(x, y, z);
      *
      * @param x number
      * @param y number
      * @param z number
-     * @param scriptName string
-     * @param functionName string
-     * @param patrolIndex number
      * @returns {@link void}
      */
-    setPatrol(x: number, y: number, z: number, scriptName: string, functionName: string, patrolIndex: number): void
+    addSteeringOffset(x: number, y: number, z: number): void
     /**
-     * Adds a new NPC's patrol point with a script trigger.
+     * Gets the steering offset of the NPC.
+     *
+     * @example
+     *    c.getSubject().getSteeringOffsets().forEach((offset) -> {
+     *        c.send(offset.x + ", " + offset.y + ", " + offset.z);
+     *    });
+     *
+     * @returns {@link List}
+     */
+    getSteeringOffsets(): List<ScriptVector>
+    /**
+     * Sets the speed of the NPC.
+     *
+     * @example
+     *    c.getSubject().setNpcSpeed(speed);
+     *
+     * @param speed number
+     * @returns {@link void}
+     */
+    setNpcSpeed(speed: number): void
+    /**
+     * Gets the speed of the NPC.
+     *
+     * @example
+     *    c.getSubject().getNpcSpeed();
+     *
+     * @returns {@link number}
+     */
+    getNpcSpeed(): number
+    /**
+     * Sets the jump power of the NPC.
+     *
+     * @example
+     *    c.getSubject().setJumpPower(jumpHeight);
+     *
+     * @param jumpHeight number
+     * @returns {@link void}
+     */
+    setJumpPower(jumpHeight: number): void
+    /**
+     * Gets the jump power of the NPC.
+     *
+     * @example
+     *    c.getSubject().getjumpPower();
+     *
+     * @returns {@link number}
+     */
+    getJumpPower(): number
+    /**
+     * Sets whether the NPC is invincible.
+     *
+     * @example
+     *    c.getSubject().setInvincible(true);
+     *
+     * @param invincible boolean
+     * @returns {@link void}
+     */
+    setInvincible(invincible: boolean): void
+    /**
+     * Checks if the NPC is invincible.
+     *
+     * @example
+     *    c.getSubject().isInvincible();
+     *
+     * @returns {@link boolean}
+     */
+    isInvincible(): boolean
+    /**
+     * Sets whether the NPC can swim.
+     *
+     * @example
+     *    c.getSubject().setCanSwim(true);
+     *
+     * @param canSwim boolean
+     * @returns {@link void}
+     */
+    setCanSwim(canSwim: boolean): void
+    /**
+     * Checks if the NPC can swim.
+     *
+     * @example
+     *    c.getSubject().canSwim();
+     *
+     * @returns {@link boolean}
+     */
+    canSwim(): boolean
+    /**
+     * Sets whether the NPC is immovable.
+     *
+     * @example
+     *    c.getSubject().setImmovable(true);
+     *
+     * @param immovable boolean
+     * @returns {@link void}
+     */
+    setImmovable(immovable: boolean): void
+    /**
+     * Checks if the NPC is immovable.
+     *
+     * @example
+     *    c.getSubject().isImmovable();
+     *
+     * @returns {@link boolean}
+     */
+    isImmovable(): boolean
+    /**
+     * Sets the shadow size of the NPC.
+     *
+     * @example
+     *    c.getSubject().setShadowSize(0.8);
+     *
+     * @param size number
+     * @returns {@link void}
+     */
+    setShadowSize(size: number): void
+    /**
+     * Gets the shadow size of the NPC.
+     *
+     * @example
+     *    var size = c.getSubject().getShadowSize();
+     *
+     * @returns {@link number} - the shadow size of the NPC.
+     */
+    getShadowSize(): number
+    /**
+     * Sets the XP value of the NPC.
+     *
+     * @example
+     *    c.getSubject().setXpValue(10);
+     *
+     * @param xp number
+     * @returns {@link number} - the new XP value.
+     */
+    setXpValue(xp: number): number
+    /**
+     * Gets the XP value of the NPC.
+     *
+     * @example
+     *    var xp = c.getSubject().getXpValue();
+     *
+     * @returns {@link number} - the XP value of the NPC.
+     */
+    getXpValue(): number
+    /**
+     * Gets the path distance of the NPC. Also determines the NPC's sight radius of "look at player" option.
+     *
+     * @example
+     *    var distance = c.getSubject().getPathDistance();
+     *
+     * @returns {@link number} - the path distance of the NPC.
+     */
+    getPathDistance(): number
+    /**
+     * Sets the path distance of the NPC. Also determines the NPC's sight radius of "look at player" option.
+     *
+     * @example
+     *    c.getSubject().setPathDistance(10);
+     *
+     * @param sightRadius number
+     * @returns {@link void}
+     */
+    setPathDistance(sightRadius: number): void
+    /**
+     * Sets the attack range of the NPC.
+     *
+     * @example
+     *    c.getSubject().setAttackRange(5);
+     *
+     * @param sightDistance number
+     * @returns {@link void}
+     */
+    setAttackRange(sightDistance: number): void
+    /**
+     * Gets the attack range of the NPC.
+     *
+     * @example
+     *    var range = c.getSubject().getAttackRange();
+     *
+     * @returns {@link number} - the attack range of the NPC.
+     */
+    getAttackRange(): number
+    /**
+     * Sets the killable status of the NPC.
+     * If false, then NPCs can be killed only by a command.
+     * Regardless of the state, killable allows to make this NPC damaged
+     * until 0 health.
+     *
+     * @example
+     *    c.getSubject().setKillable(true);
+     *
+     * @param killable boolean
+     * @returns {@link void}
+     */
+    setKillable(killable: boolean): void
+    /**
+     * Gets the killable status of the NPC.
+     * If false, then NPCs can be killed only by a command.
+     * Regardless of the state, killable allows to make this NPC damaged
+     * until 0 health.
+     *
+     * @example
+     *    var isKillable = c.getSubject().isKillable();
+     *
+     * @returns {@link boolean} - true if the NPC is killable, false otherwise.
+     */
+    isKillable(): boolean
+    /**
+     * Gets the burnable status of the NPC.
+     *
+     * @example
+     *    var canGetBurned = c.getSubject().canGetBurned();
+     *
+     * @returns {@link boolean} - true if the NPC can get burned, false otherwise.
+     */
+    canGetBurned(): boolean
+    /**
+     * Sets the burnable status of the NPC.
+     *
+     * @example
+     *    c.getSubject().canGetBurned(true);
+     *
+     * @param canGetBurned boolean
+     * @returns {@link void}
+     */
+    canGetBurned(canGetBurned: boolean): void
+    /**
+     * Gets the status if the NPC can take fall damage.
+     *
+     * @example
+     *    var canFallDamage = c.getSubject().canFallDamage();
+     *
+     * @returns {@link boolean} - true if the NPC can take fall damage, false otherwise.
+     */
+    canFallDamage(): boolean
+    /**
+     * Sets the status if the NPC can take fall damage.
+     *
+     * @example
+     *    c.getSubject().canFallDamage(true);
+     *
+     * @param canFallDamage boolean
+     * @returns {@link void}
+     */
+    canFallDamage(canFallDamage: boolean): void
+    /**
+     * Gets the damage strength points of the NPC.
+     *
+     * @example
+     *    var damage = c.getSubject().getDamage();
+     *
+     * @returns {@link number} - the damage of the NPC.
+     */
+    getDamage(): number
+    /**
+     * Sets the damage strength points of the NPC.
+     *
+     * @example
+     *    c.getSubject().setDamage(10);
+     *
+     * @param damage number
+     * @returns {@link void}
+     */
+    setDamage(damage: number): void
+    /**
+     * Gets the damage delay of the NPC.
+     *
+     * @example
+     *    var delay = c.getSubject().getDamageDelay();
+     *
+     * @returns {@link number} - the damage delay of the NPC.
+     */
+    getDamageDelay(): number
+    /**
+     * Sets the damage delay of the NPC.
+     *
+     * @example
+     *    c.getSubject().setDamageDelay(5);
+     *
+     * @param damageDelay number
+     * @returns {@link void}
+     */
+    setDamageDelay(damageDelay: number): void
+    /**
+     * Gets the wandering status of the NPC.
+     *
+     * @example
+     *    var doesWander = c.getSubject().doesWander();
+     *
+     * @returns {@link boolean} - true if the NPC wanders, false otherwise.
+     */
+    doesWander(): boolean
+    /**
+     * Sets the wandering status of the NPC.
+     *
+     * @example
+     *    c.getSubject().setWander(true);
+     *
+     * @param wander boolean
+     * @returns {@link void}
+     */
+    setWander(wander: boolean): void
+    /**
+     * Gets the status of the NPC's idle look around behavior.
+     *
+     * @example
+     *    var doesLookAround = c.getSubject().doesLookAround();
+     *
+     * @returns {@link boolean} - true if the NPC looks around while idle, false otherwise.
+     */
+    doesLookAround(): boolean
+    /**
+     * Sets the status of the NPC's idle look around behavior.
+     *
+     * @example
+     *    c.getSubject().setLookAround(true);
+     *
+     * @param lookAround boolean
+     * @returns {@link void}
+     */
+    setLookAround(lookAround: boolean): void
+    /**
+     * Gets the status of the NPC's behavior to look at the player.
+     *
+     * @example
+     *    var doesLookAtPlayer = c.getSubject().doesLookAtPlayer();
+     *
+     * @returns {@link boolean} - true if the NPC looks at the player, false otherwise.
+     */
+    doesLookAtPlayer(): boolean
+    /**
+     * Sets the status of the NPC's behavior to look at the player.
+     *
+     * @example
+     *    c.getSubject().setLookAtPlayer(true);
+     *
+     * @param lookAtPlayer boolean
+     * @returns {@link void}
+     */
+    setLookAtPlayer(lookAtPlayer: boolean): void
+    /**
+     * Removes a patrol point at a certain indext from the NPC.
+     *
+     * @example
+     *    c.getSubject().removePatrolPoint(0);
+     *
+     * @param index number
+     * @returns {@link void}
+     */
+    removePatrolPoint(index: number): void
+    /**
+     * Removes a patrol point at a certain position from the NPC.
+     *
+     * @example
+     *    var npc = c.getSubject();
+     *    var pos = npc.getPosition();
+     *    npc.removePatrolPoint(pos.x, pos.y, pos.z);
      *
      * @param x number
      * @param y number
      * @param z number
-     * @param scriptName string
-     * @param functionName string
      * @returns {@link void}
      */
-    addPatrol(x: number, y: number, z: number, scriptName: string, functionName: string): void
+    removePatrolPoint(x: number, y: number, z: number): void
     /**
      * Removes all NPC's patrol points.
      *
@@ -1094,22 +1617,310 @@ declare interface IScriptNpc extends IScriptEntity {
      * @returns {@link void}
      */
     clearPatrolPoints(): void
+}
+
+declare interface IScriptEntityItem {
+    age: number
+    pickupDelay: number
+    lifespan: number
+    owner: string
+    thrower: string
+    item: IScriptItemStack
     /**
-     * Returns the faction of the npc as a string
+     * Get entity's age.
      *
      * @example
-     *    c.send(c.getSubject().getFaction())
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
      *
-     * @returns {@link string}
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        c.getSubject().send("Item's age: " + entityItem.getAge());
+     *    }
+     *
+     * @returns {@link number} - how many ticks entity exists
      */
-    getFaction(): string
+    getAge(): number
+    /**
+     * Set entity's age.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        entityItem.setAge(5000);
+     *        c.getSubject().send("Item's age: " + entityItem.getAge());
+     *    }
+     *
+     * @param age number
+     * @returns {@link void}
+     */
+    setAge(age: number): void
+    /**
+     * Get entity's pickup delay.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        c.getSubject().send("You can pick up this item in " + entityItem.getPickupDelay() + " ticks.");
+     *    }
+     *
+     * @returns {@link number} - How many ticks remains until someone can pick up this item
+     */
+    getPickupDelay(): number
+    /**
+     * Set entity's pickup delay.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        entityItem.setPickupDelay(100); // 5 seconds
+     *        c.getSubject().send("You can pick up this item in " + entityItem.getPickupDelay() + " ticks.");
+     *    }
+     *
+     * @param delay number
+     * @returns {@link void}
+     */
+    setPickupDelay(delay: number): void
+    /**
+     * Get entity's lifespan (max age).
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        c.getSubject().send("Item disappear in " + (entityItem.getLifespan() - entityItem.getAge()) + " ticks.");
+     *    }
+     *
+     * @returns {@link number} - How many ticks remains until someone can pick up this item
+     */
+    getLifespan(): number
+    /**
+     * Set entity's lifespan (max age).
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        entityItem.setLifespan(1200); // 60 seconds
+     *        c.getSubject().send("Item disappear in " + (entityItem.getLifespan() - entityItem.getAge()) + " ticks.");
+     *    }
+     *
+     * @param lifespan number
+     * @returns {@link void}
+     */
+    setLifespan(lifespan: number): void
+    /**
+     * Get entity's owner nickname (Who can pick up this item).
+     * Returns empty string if anyone able to pick it up.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        c.getSubject().send(entityItem.getOwner());
+     *    }
+     *
+     * @returns {@link string} - Nickname of player who can pick up this item.
+     */
+    getOwner(): string
+    /**
+     * Set entity's owner nickname (Who can pick up this item).
+     * use with empty string, if you want anyone to be able to pick it up.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        entityItem.setOwner(c.getSubject().getName());
+     *    }
+     *
+     * @param owner string
+     * @returns {@link void}
+     */
+    setOwner(owner: string): void
+    /**
+     * Get entity's thrower nickname (Who throw this item).
+     * Returns empty string if it spawns through code.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        c.getSubject().send(entityItem.getThrower());
+     *    }
+     *
+     * @returns {@link string} - Nickname of player who throw this item.
+     */
+    getThrower(): string
+    /**
+     * Set entity's thrower nickname (Who throw this item).
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond_hoe");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *        entityItem.setThrower(c.getSubject().getName());
+     *    }
+     *
+     * @param thrower string
+     * @returns {@link void}
+     */
+    setThrower(thrower: string): void
+    /**
+     * Get itemStack from this entity.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var pos = c.getSubject().getPosition();
+     *        var entities = c.getWorld().getEntities(pos.x, pos.y + 1, pos.z, 3);
+     *
+     *        for (var i in entities)
+     *        {
+     *            var entity = entities[i];
+     *
+     *            if (entity.isItem())
+     *            {
+     *                c.player.send(entity.getItem().getItem().getId());
+     *            }
+     *        }
+     *    }
+     *
+     * @returns {@link IScriptItemStack}
+     */
+    getItem(): IScriptItemStack
+    /**
+     * Get itemStack from this entity.
+     *
+     * @example
+     *    // Midas :D
+     *    // Turns any item in radius of 3 blocks into golden nuggets.
+     *    function main(c)
+     *    {
+     *        var pos = c.getSubject().getPosition();
+     *        var entities = c.getWorld().getEntities(pos.x, pos.y + 1, pos.z, 3);
+     *
+     *        for (var i in entities)
+     *        {
+     *            var entity = entities[i];
+     *
+     *            if (entity.isItem())
+     *            {
+     *                entity.setItem(mappet.createItem("minecraft:golden_nugget"))
+     *            }
+     *        }
+     *    }
+     *
+     * @param itemStack IScriptItemStack
+     * @returns {@link void}
+     */
+    setItem(itemStack: IScriptItemStack): void
+    /**
+     * Makes item unaffordable.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *
+     *        entityItem.setNoDespawn();
+     *        entityItem.setInfinitePickupDelay();
+     *    }
+     *
+     * @returns {@link void}
+     */
+    setInfinitePickupDelay(): void
+    /**
+     * Set's default pick up delay (10, actually).
+     *
+     * @returns {@link void}
+     */
+    setDefaultPickupDelay(): void
+    /**
+     * Entity will not despawn.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var item = mappet.createItem("minecraft:diamond");
+     *        var pos = c.getSubject().getPosition();
+     *
+     *        var entityItem = c.getWorld().dropItemStack(item, pos.x, pos.y + 3, pos.z);
+     *
+     *        entityItem.setNoDespawn();
+     *        entityItem.setInfinitePickupDelay();
+     *    }
+     *
+     * @returns {@link void}
+     */
+    setNoDespawn(): void
+    /**
+     * Returns whether it's possible to pick up this item, or not.
+     *
+     * @example
+     *    // Item magnet :D
+     *    function main(c)
+     *    {
+     *        var player = c.getSubject();
+     *        var pos = player.getPosition();
+     *        var entities = c.getWorld().getEntities(pos.x, pos.y + 1, pos.z, 10);
+     *
+     *        for (var i in entities)
+     *        {
+     *            var entity = entities[i];
+     *
+     *            if (entity.isItem() && entity.canPickup())
+     *            {
+     *                player.giveItem(entity.getItem());
+     *                entity.remove(); // despawn
+     *            }
+     *        }
+     *    }
+     *
+     * @returns {@link boolean}
+     */
+    canPickup(): boolean
 }
 
 declare interface IScriptEntity {
     readonly minecraftEntity: Entity
     readonly world: IScriptWorld
-    readonly fancyWorld: IScriptFancyWorld
     readonly position: ScriptVector
+    dimension: number
     readonly motion: ScriptVector
     readonly rotations: ScriptVector
     readonly pitch: number
@@ -1120,7 +1931,7 @@ declare interface IScriptEntity {
     readonly width: number
     readonly height: number
     hp: number
-    readonly maxHp: number
+    maxHp: number
     mainItem: IScriptItemStack
     offItem: IScriptItemStack
     helmet: IScriptItemStack
@@ -1135,12 +1946,22 @@ declare interface IScriptEntity {
     name: string
     fullData: INBTCompound
     readonly entityData: INBTCompound
+    readonly boundingBox: ScriptBox
     fallDistance: number
+    readonly leashedEntities: List<IScriptEntity>
+    leashHolder: IScriptEntity
     readonly states: IMappetStates
     morph: AbstractMorph
     /**
      * Get Minecraft entity instance. <b>BEWARE:</b> you need to know the MCP
      * mappings in order to directly call methods on this instance!
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        //c.getSubject().getMinecraftEntity().abilities.disableDamage = true
+     *        c.getSubject().getMinecraftEntity().field_71075_bZ.field_75102_a = true // or false
+     *    }
      *
      * @returns {@link Entity}
      */
@@ -1157,16 +1978,6 @@ declare interface IScriptEntity {
      * @returns {@link IScriptWorld}
      */
     getWorld(): IScriptWorld
-    /**
-     * Get entity's fancy world.
-     *
-     * @example
-     *    var s = c.getSubject();
-     *    var fancyWorld = s.getFancyWorld();
-     *
-     * @returns {@link IScriptFancyWorld}
-     */
-    getFancyWorld(): IScriptFancyWorld
     /**
      * Get entity's position.
      *
@@ -1190,6 +2001,32 @@ declare interface IScriptEntity {
      * @returns {@link void}
      */
     setPosition(x: number, y: number, z: number): void
+    /**
+     * Returns the dimension of the entity.
+     *
+     * @example
+     *    var dimension = c.getSubject().getDimension();
+     *    switch (dimension)
+     *    {
+     *        case 0: c.send("Overworld"); break;
+     *        case 1: c.send("The End"); break;
+     *        case -1: c.send("The Nether"); break;
+     *        default: c.send("Unknown dimension"); break;
+     *    }
+     *
+     * @returns {@link number} - The dimension of the entity as an integer.
+     */
+    getDimension(): number
+    /**
+     * Set the dimension of the entity.
+     *
+     * @example
+     *    c.getSubject().setDimension(1); // Teleport to The End
+     *
+     * @param dimension number
+     * @returns {@link void}
+     */
+    setDimension(dimension: number): void
     /**
      * Get entity's motion.
      *
@@ -1352,11 +2189,23 @@ declare interface IScriptEntity {
      * @example
      *    var subject = c.getSubject();
      *
-     *    subject.send(subject.getName() + " can have up to " + subject.getMaxHp() + " HP!);
+     *    subject.send(subject.getName() + " can have up to " + subject.getMaxHp() + " HP!");
      *
      * @returns {@link number}
      */
     getMaxHp(): number
+    /**
+     * Set entity's maximum health points.
+     *
+     * @example
+     *    var subject = c.getSubject();
+     *    subject.setMaxHp(100);
+     *    subject.send(subject.getName() + " can have up to " + subject.getMaxHp() + " HP!");
+     *
+     * @param hp number
+     * @returns {@link void}
+     */
+    setMaxHp(hp: number): void
     /**
      * Check whether this entity is in water.
      *
@@ -1508,12 +2357,34 @@ declare interface IScriptEntity {
      * Set item held in off hand.
      *
      * @example
-     *    c.getSubject().setMainItem(mappet.createItem("minecraft:shield"));
+     *    c.getSubject().setOffItem(mappet.createItem("minecraft:shield"));
      *
      * @param stack IScriptItemStack
      * @returns {@link void}
      */
     setOffItem(stack: IScriptItemStack): void
+    /**
+     * Give item to this entity. (like the /give command)
+     *
+     * @example
+     *    c.getSubject().giveItem(mappet.createItem("minecraft:diamond", 64));
+     *
+     * @param stack IScriptItemStack
+     * @returns {@link void}
+     */
+    giveItem(stack: IScriptItemStack): void
+    /**
+     * Give item to this entity. (like the /give command)
+     *
+     * @example
+     *    c.getSubject().giveItem(mappet.createItem("minecraft:diamond", 64), false, true);
+     *
+     * @param stack IScriptItemStack
+     * @param playSound boolean
+     * @param dropIfInventoryFull boolean
+     * @returns {@link void}
+     */
+    giveItem(stack: IScriptItemStack, playSound: boolean, dropIfInventoryFull: boolean): void
     /**
      * Return the entity's helmet's item stack.
      *
@@ -1679,6 +2550,17 @@ declare interface IScriptEntity {
      * Get unique ID of this entity, which can be used, if needed, in
      * commands as a target selector.
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var uuid = c.getSubject().getUniqueId()
+     *        var entity = c.getServer().getEntity(uuid)
+     *
+     *        var motion = c.getSubject().getMotion();
+     *
+     *        entity.setMotion(motion.x, motion.y+3, motion.z)
+     *    }
+     *
      * @returns {@link string}
      */
     getUniqueId(): string
@@ -1768,6 +2650,18 @@ declare interface IScriptEntity {
      */
     isNpc(): boolean
     /**
+     * Check whether this entity is an NPC.
+     *
+     * @returns {@link boolean}
+     */
+    isNPC(): boolean
+    /**
+     * Check whether this entity is an item.
+     *
+     * @returns {@link boolean}
+     */
+    isItem(): boolean
+    /**
      * Check whether this entity is living base.
      *
      * @returns {@link boolean}
@@ -1827,7 +2721,7 @@ declare interface IScriptEntity {
      * @example
      *    var s = c.getSubject();
      *
-     *    if (s.isInAnArea(20, 3, 100, 30, 8, 110))
+     *    if (s.isInArea(20, 3, 100, 30, 8, 110))
      *    {
      *        c.send(s.getName() + " is within given area!");
      *    }
@@ -1844,12 +2738,27 @@ declare interface IScriptEntity {
     /**
      * Inflict some damage on this entity (use {@link #kill()} to kill the entity though).
      *
+     * @example
+     *    c.getSubject().damage(1); //dealt you 1 damage
+     *
      * @param health number
      * @returns {@link void}
      */
     damage(health: number): void
     /**
      * Damage this entity as given entity was the source of attack.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var player = c.getSubject();
+     *        var result = player.rayTrace(32);
+     *
+     *        if (result.isEntity())
+     *        {
+     *            result.getEntity().damageAs(player, 1);
+     *        }
+     *    }
      *
      * @param entity IScriptEntity
      * @param health number
@@ -1858,6 +2767,18 @@ declare interface IScriptEntity {
     damageAs(entity: IScriptEntity, health: number): void
     /**
      * Damage this entity as given player was the source of the attack with its equipment.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var player = c.getSubject();
+     *        var result = player.rayTrace(32);
+     *
+     *        if (result.isEntity())
+     *        {
+     *            result.getEntity().damageWithItemsAs(player);
+     *        }
+     *    }
      *
      * @param player IScriptPlayer
      * @returns {@link void}
@@ -1874,7 +2795,7 @@ declare interface IScriptEntity {
      *
      *        if (ray.isEntity())
      *        {
-     *             s.mount(ray.getEntity(), 1);
+     *             s.mount(ray.getEntity());
      *        }
      *    }
      *
@@ -1904,41 +2825,55 @@ declare interface IScriptEntity {
      */
     getMount(): IScriptEntity
     /**
+     * Returns the bounding box of this entity.
+     *
+     * @example
+     *    var s = c.getSubject();
+     *    var box = s.getBoundingBox();
+     *    c.send("The bounding box of " + s.getName() + " is " + box.minX + ", " + box.minY + ", " + box.minZ + " to " + box.maxX + ", " + box.maxY + ", " + box.maxZ);
+     *
+     * @returns {@link ScriptBox} - the bounding box of this entity
+     */
+    getBoundingBox(): ScriptBox
+    /**
      * Drop the item an entity is holding.
      *
      * @example
      *    var s = c.getSubject();
-     *
-     *    s.dropItem(10);
+     *    var entityItem = s.dropItem(10);
+     *    entityItem.setNoDespawn();
+     *    entityItem.setInfinitePickupDelay();
      *
      * @param amount number
-     * @returns {@link IScriptEntity}
+     * @returns {@link ScriptEntityItem}
      */
-    dropItem(amount: number): IScriptEntity
+    dropItem(amount: number): IScriptEntityItem
     /**
      * Drop one item of what the entity is holding.
      *
      * @example
      *    var s = c.getSubject();
+     *    var entityItem = s.dropItem();
+     *    entityItem.setNoDespawn();
+     *    entityItem.setInfinitePickupDelay();
      *
-     *    s.dropItem();
-     *
-     * @returns {@link IScriptEntity}
+     * @returns {@link ScriptEntityItem}
      */
-    dropItem(): IScriptEntity
+    dropItem(): IScriptEntityItem
     /**
      * Drop an item of the entity even if it is not holding it.
      * Therefore, it doesn't remove the item from the entity's inventory.
      *
      * @example
      *    var item = mappet.createItemNBT("{id:\"minecraft:stone\",Count:64b,Damage:0s}");
-     *
-     *    c.getSubject().dropItem(item)
+     *    var entityItem = c.getSubject().dropItem(item);
+     *    entityItem.setNoDespawn();
+     *    entityItem.setInfinitePickupDelay();
      *
      * @param itemStack IScriptItemStack
-     * @returns {@link IScriptEntity}
+     * @returns {@link ScriptEntityItem}
      */
-    dropItem(itemStack: IScriptItemStack): IScriptEntity
+    dropItem(itemStack: IScriptItemStack): IScriptEntityItem
     /**
      * Get entity's fall distance.
      *
@@ -1982,10 +2917,77 @@ declare interface IScriptEntity {
      */
     swingArm(arm: number): void
     /**
+     * Returns leashed entities by this entity.
+     *
+     * @example
+     *    var leashedEntities = c.getSubject().getLeashedEntities();
+     *    leashedEntities.forEach(function(leashedEntity){
+     *        leashedEntity.kill();
+     *    });
+     *
+     * @returns {@link List} - leashed entities list
+     */
+    getLeashedEntities(): List<IScriptEntity>
+    /**
+     * Sets the leash holder of this entity.
+     *
+     * @example
+     *    // Leash all entities within 5 blocks of the subject
+     *    function main(c){
+     *        var tracker = c.getSubject();
+     *        var trackedEntities = c.getServer().getEntities("@e[type=!player]");
+     *        trackedEntities.forEach(function(trackedEntity){
+     *            if (trackedEntity.isEntityInRadius(tracker, 5)){
+     *                trackedEntity.setLeashHolder(tracker);
+     *            }
+     *        });
+     *    }
+     *
+     * @param leashHolder IScriptEntity
+     * @returns {@link boolean} - whether the leash holder was set successfully
+     */
+    setLeashHolder(leashHolder: IScriptEntity): boolean
+    /**
+     * Returns the leash holder of this entity.
+     *
+     * @example
+     *    //in scripted item (player: on entity interaction)
+     *    //this leashes the entity to the player if it is not already leashed
+     *    function main(c)
+     *    {
+     *        var player = c.getSubject();
+     *        var entity = c.getObject();
+     *        if (entity.getLeashHolder()!=null) return;
+     *        c.scheduleScript(0, function (c)
+     *        {
+     *            entity.setLeashHolder(player);
+     *        });
+     *    }
+     *
+     * @returns {@link IScriptEntity} - the leash holder of this entity
+     */
+    getLeashHolder(): IScriptEntity
+    /**
+     * Clears the leash holder of this entity.
+     *
+     * @example
+     *    //free all leashed entities in the world
+     *    function main(c)
+     *    {
+     *        c.getServer().getEntities("@e[type=!player]").forEach(function(entity){
+     *            entity.clearLeashHolder(true); //true to drop the lead
+     *        });
+     *    }
+     *
+     * @param dropLead boolean
+     * @returns {@link boolean} - whether the leash holder was cleared successfully
+     */
+    clearLeashHolder(dropLead: boolean): boolean
+    /**
      * Set entity's modifier to a certain value.
      *
      * @example
-     *    c.getSubject().setModifier("generic.movementSpeed", "0.5");
+     *    c.getSubject().setModifier("generic.movementSpeed", 0.5);
      *
      * @param modifierName string
      * @param value number
@@ -2080,7 +3082,7 @@ declare interface IScriptEntity {
      *
      * @param potion Potion
      * @returns {@link boolean} - <code>true</code> if there was effect, and it was successfully removed,
-         <code>false</code> if had no given effect present.
+ <code>false</code> if had no given effect present.
      */
     removePotion(potion: Potion): boolean
     /**
@@ -2101,6 +3103,15 @@ declare interface IScriptEntity {
     clearPotions(): void
     /**
      * Get entity's states (if it has some, only players and NPCs have states).
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var states = c.getSubject().getStates()
+     *        states.add("run", 1)
+     *
+     *        c.send("state run: �6"+states.getNumber("run"))
+     *    }
      *
      * @returns {@link IMappetStates} - entity's states, or null if this entity doesn't have states.
      */
@@ -2137,6 +3148,15 @@ declare interface IScriptEntity {
     setMorph(morph: AbstractMorph): boolean
     /**
      * Display a world morph to all players that see this entity (including themselves).
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var morph = mappet.createMorph('{Name:"item"}');
+     *
+     *        s.displayMorph(morph, 100, 0, s.getHeight() + 0.5, 0);
+     *    }
      *
      * @param morph AbstractMorph
      * @param expiration number
@@ -2250,7 +3270,7 @@ declare interface IScriptEntity {
     /**
      * Execute for the entity a script with a given script name.
      *
-     * < pre>{@code
+     * @example
      *    c.getSubject().executeScript("example_script.js", "custom_function");
      *
      * @param scriptName string
@@ -2258,6 +3278,30 @@ declare interface IScriptEntity {
      * @returns {@link void}
      */
     executeScript(scriptName: string, func: string): void
+    /**
+     * Execute for the entity a script with a given script name and arguments.
+     *
+     * @example
+     *    c.getSubject().executeScript("example_script.js", "func_with_context", c, 1, 2, 3);
+     *    c.getSubject().executeScript("example_script.js", "func_without_context", 1, 2, 3);
+     *
+     *    // example_script.js
+     *    function func_with_context(c, arg1, arg2, arg3)
+     *    {
+     *        c.getSubject().send("arg1: " + arg1 + ", arg2: " + arg2 + ", arg3: " + arg3);
+     *    }
+     *
+     *    function func_without_context(arg1, arg2, arg3)
+     *    {
+     *        print("arg1: " + arg1 + ", arg2: " + arg2 + ", arg3: " + arg3);
+     *    }
+     *
+     * @param scriptName string
+     * @param function string
+     * @param args Object
+     * @returns {@link void}
+     */
+    executeScript(scriptName: string, func: string, args: Object): void
     /**
      * Lock the entity's position.
      *
@@ -2298,7 +3342,7 @@ declare interface IScriptEntity {
      *
      * @example
      *    var s = c.getSubject();
-     *    var rot = s.getRotation();
+     *    var rot = s.getRotations();
      *    s.lockRotation(rot.x, rot.y, rot.z);
      *
      * @param pitch number
@@ -2333,39 +3377,39 @@ declare interface IScriptEntity {
      * with the given <b>interpolation type</b> and <b>duration</b>.
      * The following interpolation types are supported:</p>
      * <ul>
-     *     §7<li>linear</li>§r
-     *     §7<li>quad_in</li>§r
-     *     §7<li>quad_out</li>§r
-     *     §7<li>quad_inout</li>§r
-     *     §7<li>cubic_in</li>§r
-     *     §7<li>cubic_out</li>§r
-     *     §7<li>cubic_inout</li>§r
-     *     §7<li>exp_in</li>§r
-     *     §7<li>exp_out</li>§r
-     *     §7<li>exp_inout</li>§r
-     *     §7<li>back_in</li>§r
-     *     §7<li>back_out</li>§r
-     *     §7<li>back_inout</li>§r
-     *     §7<li>elastic_in</li>§r
-     *     §7<li>elastic_out</li>§r
-     *     §7<li>elastic_inout</li>§r
-     *     §7<li>bounce_in</li>§r
-     *     §7<li>bounce_out</li>§r
-     *     §7<li>bounce_inout</li>§r
-     *     §7<li>sine_in</li>§r
-     *     §7<li>sine_out</li>§r
-     *     §7<li>sine_inout</li>§r
-     *     §7<li>quart_in</li>§r
-     *     §7<li>quart_out</li>§r
-     *     §7<li>quart_inout</li>§r
-     *     §7<li>quint_in</li>§r
-     *     §7<li>quint_out</li>§r
+     *     <li>§7linear§r</li>
+     *     <li>§7quad_in§r</li>
+     *     <li>§7quad_out§r</li>
+     *     <li>§7quad_inout§r</li>
+     *     <li>§7cubic_in§r</li>
+     *     <li>§7cubic_out§r</li>
+     *     <li>§7cubic_inout§r</li>
+     *     <li>§7exp_in§r</li>
+     *     <li>§7exp_out§r</li>
+     *     <li>§7exp_inout§r</li>
+     *     <li>§7back_in§r</li>
+     *     <li>§7back_out§r</li>
+     *     <li>§7back_inout§r</li>
+     *     <li>§7elastic_in§r</li>
+     *     <li>§7elastic_out§r</li>
+     *     <li>§7elastic_inout§r</li>
+     *     <li>§7bounce_in§r</li>
+     *     <li>§7bounce_out§r</li>
+     *     <li>§7bounce_inout§r</li>
+     *     <li>§7sine_in§r</li>
+     *     <li>§7sine_out§r</li>
+     *     <li>§7sine_inout§r</li>
+     *     <li>§7quart_in§r</li>
+     *     <li>§7quart_out§r</li>
+     *     <li>§7quart_inout§r</li>
+     *     <li>§7quint_in§r</li>
+     *     <li>§7quint_out§r</li>
      * </ul>
      *
      * @example
      *    var s = c.getSubject();
      *    var pos = s.getPosition();
-     *    s.moveTo("quad_out", 30, pos.x, pos.y+2, pos.z);
+     *    s.moveTo("quad_out", 30, pos.x, pos.y+2, pos.z, false);
      *
      * @param interpolation string
      * @param durationTicks number
@@ -2474,9 +3518,43 @@ declare interface IScriptWorld {
      * Get Minecraft world instance. <b>BEWARE:</b> you need to know the MCP
      * mappings in order to directly call methods on this instance!
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var seaLevel = c.getWorld().getMinecraftWorld().field_181546_a //Sea level
+     *
+     *        c.send(seaLevel)
+     *    }
+     *
      * @returns {@link World}
      */
     getMinecraftWorld(): World
+    /**
+     * Set a game rule to a given value.
+     *
+     * @example
+     *    c.getWorld().setGameRule("keepInventory", true); //btw you can NOT write 1 instead of true
+     *    c.getWorld().setGameRule("randomTickSpeed", 100);
+     *
+     * @param gameRule string
+     * @param value Object
+     * @returns {@link void}
+     */
+    setGameRule(gameRule: string, value: Object): void
+    /**
+     * Get a game rule value.
+     *
+     * @example
+     *    var keepInventory = c.getWorld().getGameRule("keepInventory");
+     *    var randomTickSpeed = c.getWorld().getGameRule("randomTickSpeed");
+     *
+     *    c.send("Keep inventory: " + keepInventory);
+     *    c.send("Random tick speed: " + randomTickSpeed);
+     *
+     * @param gameRule string
+     * @returns {@link Object} - The value of the game rule. The type of the value will match the expected type for the game rule.
+     */
+    getGameRule(gameRule: string): Object
     /**
      * Set a block at XYZ, use {@link IScriptFactory#createBlockState(String, int)}
      * to get the block state.
@@ -2494,6 +3572,18 @@ declare interface IScriptWorld {
      */
     setBlock(state: IScriptBlockState, x: number, y: number, z: number): void
     /**
+     * Remove a block at given XYZ.
+     *
+     * @example
+     *    c.getWorld().removeBlock(214, 3, 509);
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @returns {@link void}
+     */
+    removeBlock(x: number, y: number, z: number): void
+    /**
      * Get block state at given XYZ.
      *
      * @example
@@ -2508,7 +3598,27 @@ declare interface IScriptWorld {
      */
     getBlock(x: number, y: number, z: number): IScriptBlockState
     /**
+     * Get block state at given XYZ.
+     *
+     * @example
+     *    var block = c.getWorld().getBlock(mappet.vector3(214, 3, 509));
+     *
+     *    c.send("Block at (214, 3, 509) is " + block.getBlockId());
+     *
+     * @param pos ScriptVector
+     * @returns {@link IScriptBlockState} - a block state at given XYZ, or null if the chunk isn't loaded
+     */
+    getBlock(pos: ScriptVector): IScriptBlockState
+    /**
      * Whether a tile entity is present at given XYZ.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var hasTileEntity = c.getWorld().hasTileEntity(0, 80, 0)
+     *
+     *        c.send(hasTileEntity)
+     *    }
      *
      * @param x number
      * @param y number
@@ -2517,10 +3627,48 @@ declare interface IScriptWorld {
      */
     hasTileEntity(x: number, y: number, z: number): boolean
     /**
+     * Replace all blocks in the given area with the given block state.
+     *
+     * @example
+     *    c.getWorld().replaceBlocks(
+     *       mappet.createBlockState("minecraft:dirt", 0),
+     *       mappet.createBlockState("minecraft:dirt", 1),
+     *       mappet.vector3(214, 3, 509),
+     *       mappet.vector3(214, 3, 509)
+     *    );
+     *
+     * @param blockToBeReplaced IScriptBlockState
+     * @param newBlock IScriptBlockState
+     * @param pos1 Vector3d
+     * @param pos2 Vector3d
+     * @returns {@link void}
+     */
+    replaceBlocks(blockToBeReplaced: IScriptBlockState, newBlock: IScriptBlockState, pos1: Vector3d, pos2: Vector3d): void
+    /**
+     * Replace all blocks in the given area with the given block state and tile entity data.
+     *
+     * @example
+     *    c.getWorld().replaceBlocks(
+     *       mappet.createBlockState("minecraft:dirt", 0),
+     *       mappet.createBlockState("blockbuster:model", 0),
+     *       mappet.createCompound('{Morph:{Settings:{Hands:1b},Name:"blockbuster.fred"},id:"minecraft:blockbuster_model_tile_entity"}'),
+     *       mappet.vector3(171, 61, 279),
+     *       mappet.vector3(176, 64, 276)
+     *    );
+     *
+     * @param blockToBeReplaced IScriptBlockState
+     * @param newBlock IScriptBlockState
+     * @param tileData INBTCompound
+     * @param pos1 Vector3d
+     * @param pos2 Vector3d
+     * @returns {@link void}
+     */
+    replaceBlocks(blockToBeReplaced: IScriptBlockState, newBlock: IScriptBlockState, tileData: INBTCompound, pos1: Vector3d, pos2: Vector3d): void
+    /**
      * Get tile entity at given XYZ.
      *
      * @example
-     *    var tile = c.getWorld().getBlock(214, 3, 509);
+     *    var tile = c.getWorld().getTileEntity(214, 3, 509);
      *
      *    if (tile)
      *    {
@@ -2832,6 +3980,35 @@ declare interface IScriptWorld {
      */
     getEntities(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): List<IScriptEntity>
     /**
+     * Get entities within the box specified by given coordinates in this world ignoring the volume limit.
+     * This method does not limit to scanning entities only within <b>100 blocks</b>
+     *
+     * @example
+     *    // Y position is at the feet, while X and Z is at center
+     *    var pos = c.getSubject().getPosition();
+     *    var entities = c.getWorld().getEntities(pos.x - 30, pos.y - 30, pos.z - 30, pos.x + 30, pos.y + 30, pos.z + 30, true);
+     *
+     *    for (var i in entities)
+     *    {
+     *        var entity = entities[i];
+     *
+     *        if (!entity.isSame(c.getSubject()))
+     *        {
+     *            entity.damage(2.0);
+     *        }
+     *    }
+     *
+     * @param x1 number
+     * @param y1 number
+     * @param z1 number
+     * @param x2 number
+     * @param y2 number
+     * @param z2 number
+     * @param ignoreVolumeLimit boolean
+     * @returns {@link List}
+     */
+    getEntities(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, ignoreVolumeLimit: boolean): List<IScriptEntity>
+    /**
      * Get entities within the sphere specified by given coordinates and radius in
      * this world. This method limits to scanning entities only within <b>50 blocks
      * radius</b> in any direction. If the sphere provided has the radius that is
@@ -2940,9 +4117,9 @@ declare interface IScriptWorld {
      * @param x number
      * @param y number
      * @param z number
-     * @returns {@link IScriptEntity}
+     * @returns {@link IScriptEntityItem}
      */
-    dropItemStack(stack: IScriptItemStack, x: number, y: number, z: number): IScriptEntity
+    dropItemStack(stack: IScriptItemStack, x: number, y: number, z: number): IScriptEntityItem
     /**
      * Drop an item stack at given XYZ position in this world with desired velocity.
      *
@@ -2959,13 +4136,22 @@ declare interface IScriptWorld {
      * @param mx number
      * @param my number
      * @param mz number
-     * @returns {@link IScriptEntity}
+     * @returns {@link IScriptEntityItem}
      */
-    dropItemStack(stack: IScriptItemStack, x: number, y: number, z: number, mx: number, my: number, mz: number): IScriptEntity
+    dropItemStack(stack: IScriptItemStack, x: number, y: number, z: number, mx: number, my: number, mz: number): IScriptEntityItem
     /**
      * Make an explosion in this world at given coordinates, and distance that
      * destroys blocks, damages entities but not places fire. See {@link IScriptWorld#explode(IScriptEntity, double, double, double, float, boolean, boolean)}
      * for more thorough definition of arguments.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var pos = s.getPosition();
+     *
+     *        c.getWorld().explode(pos.x, pos.y, pos.z, 10)
+     *    }
      *
      * @param x number
      * @param y number
@@ -2979,6 +4165,15 @@ declare interface IScriptWorld {
      * options to place fire and destroy blocks. See {@link IScriptWorld#explode(IScriptEntity, double, double, double, float, boolean, boolean)}
      * for more thorough definition of arguments.
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var pos = s.getPosition();
+     *
+     *        c.getWorld().explode(pos.x, pos.y, pos.z, 10, false, false)
+     *    }
+     *
      * @param x number
      * @param y number
      * @param z number
@@ -2991,6 +4186,15 @@ declare interface IScriptWorld {
     /**
      * Make an explosion in this world at given coordinates, distance, and entity
      * that caused the explosion.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var pos = s.getPosition();
+     *
+     *        c.getWorld().explode(s, pos.x, pos.y, pos.z, 10, false, false)
+     *    }
      *
      * @param exploder IScriptEntity
      * @param x number
@@ -3028,27 +4232,6 @@ declare interface IScriptWorld {
      * @returns {@link IScriptRayTrace}
      */
     rayTraceBlock(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): IScriptRayTrace
-    /**
-     * Set morph (from NBT) to a model block at given position in this world.
-     * It only works when Blockbuster mod is installed.
-     *
-     * @example
-     *    function main(c)
-     *    {
-     *        var pos = c.getSubject().getPosition()
-     *        var nbt = '{Settings:{Hands:1b},Name:"blockbuster.fred"}';
-     *
-     *        c.getWorld().setModelBlock(nbt, pos.x, pos.y, pos.z, true);
-     *    }
-     *
-     * @param nbt string
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param force boolean
-     * @returns {@link void}
-     */
-    setModelBlockMorph(nbt: string, x: number, y: number, z: number, force: boolean): void
     /**
      * Return whether a button, plate or lever is active or not.
      *
@@ -3131,7 +4314,11 @@ declare interface IScriptWorld {
      * Sets a tile entity.
      *
      * @example
-     *    c.getWorld().setTileEntity(530, 152, 546, mappet.createBlockState("blockbuster:model", 0),mappet.createCompound('{,Morph:{Settings:{Hands:1b},Name:"blockbuster.fred"},id:"minecraft:blockbuster_model_tile_entity"}');
+     *    c.getWorld().setTileEntity(
+     *        530, 152, 546,
+     *        mappet.createBlockState("blockbuster:model", 0),
+     *        mappet.createCompound('{Morph:{Settings:{Hands:1b},Name:"blockbuster.fred"},id:"minecraft:blockbuster_model_tile_entity"}')
+     *    );
      *
      * @param x number
      * @param y number
@@ -3145,7 +4332,7 @@ declare interface IScriptWorld {
      * Fills a range with tile entities.
      *
      * @example
-     *    c.getWorld().fillTileEntities(530, 152, 546, mappet.createBlockState("blockbuster:model", 0),mappet.createCompound('{,Morph:{Settings:{Hands:1b},Name:"blockbuster.fred"},id:"minecraft:blockbuster_model_tile_entity"}');
+     *    c.getWorld().fillTileEntities(530, 152, 546, mappet.createBlockState("blockbuster:model", 0), mappet.createCompound('{Morph:{Settings:{Hands:1b},Name:"blockbuster.fred"},id:"minecraft:blockbuster_model_tile_entity"}'));
      *
      * @param x1 number
      * @param y1 number
@@ -3162,7 +4349,7 @@ declare interface IScriptWorld {
      * Clones am area to another area.
      *
      * @example
-     *    c.getWorld().clone(0, 100, 0, 3, 100, 3, 0, 101, 0, false);
+     *    c.getWorld().clone(0, 100, 0, 3, 100, 3, 0, 101, 0);
      *
      * @param x1 number
      * @param y1 number
@@ -3177,49 +4364,32 @@ declare interface IScriptWorld {
      */
     clone(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, xNew: number, yNew: number, zNew: number): void
     /**
-     * Saves a schematic file in the world's schematics folder in world/mappet/schematics.
+     * Clones the block to another coordinates.
      *
      * @example
-     *    c.getWorld().saveSchematic("my_schematic", 0, 100, 0, 3, 100, 3);
+     *    function main(c)
+     *    {
+     *        c.getWorld().clone(0, 80, 0, 0, 83, 0)
+     *    }
      *
-     * @param name string
-     * @param x1 number
-     * @param y1 number
-     * @param z1 number
-     * @param x2 number
-     * @param y2 number
-     * @param z2 number
-     * @returns {@link void}
-     */
-    saveSchematic(name: string, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void
-    /**
-     * Loads a schematic file from the world's schematics folder in world/mappet/schematics.
-     *
-     * @example
-     *    c.getWorld().loadSchematic("my_schematic", 0, 100, 0);
-     *
-     * @param name string
      * @param x number
      * @param y number
      * @param z number
+     * @param xNew number
+     * @param yNew number
+     * @param zNew number
      * @returns {@link void}
      */
-    loadSchematic(name: string, x: number, y: number, z: number): void
-    /**
-     * Serialize a schematic into a NBT compound.
-     *
-     * @example
-     *    var nbt = c.getWorld().serializeSchematic(schematic);
-     *
-     * @param name string
-     * @returns {@link INBTCompound} - NBT compound
-     */
-    serializeSchematic(name: string): INBTCompound
+    clone(x: number, y: number, z: number, xNew: number, yNew: number, zNew: number): void
     /**
      * Gets the block stack at given position, including tile entity data.
      *
      * @example
-     *
+     *    var x= 0, y = 100, z = 0;
+     *    var world = c.getWorld();
+     *    var blockItemStack = world.getBlockStackWithTile(x, y, z);
+     *    world.setBlock(mappet.createBlockState("minecraft:air", 0), x, y, z)
+     *    world.dropItemStack(blockItemStack, x+0.5, y+0.5, z+0.5);
      *
      * @param x number
      * @param y number
@@ -3228,27 +4398,30 @@ declare interface IScriptWorld {
      */
     getBlockStackWithTile(x: number, y: number, z: number): IScriptItemStack
     /**
-     * Shoots a gun projectile entity.
+     * Returns a new empty Schematic object.
      *
      * @example
-     *    var projectile = c.getWorld().shootBBGunProjectile(c.getSubject(), 547, 160, 497, 0, -90, '{Gun:{TickCommand:"particle heart ~ ~1 ~ 0.2 0.2 0.2 1",StoredAmmo:0,Ticking:1,Damage:1.0f,Projectile:{Meta:0b,Block:"minecraft:stone",Name:"block"},Gravity:0.0f}}')
-     *    c.scheduleScript(20, function (c){
-     *        projectile.executeCommand("summon tnt ~ ~ ~")
-     *        projectile.remove()
-     *    });
+     *    function main(c)
+     *    {
+     *        var schematic = c.world.createSchematic();
+     *        schematic.loadFromWorld(0, 4, 0, 4, 8, 4).saveToFile("mySchematic").place(0, 4, 4).place(0, 4, 8);
+     *    }
      *
-     * @param shooter IScriptEntity
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param yaw number
-     * @param pitch number
-     * @param gunPropsNbtString string
-     * @returns {@link IScriptEntity}
+     * @returns {@link MappetSchematic} - {@link IMappetSchematic}
      */
-    shootBBGunProjectile(shooter: IScriptEntity, x: number, y: number, z: number, yaw: number, pitch: number, gunPropsNbtString: string): IScriptEntity
+    createSchematic(): IMappetSchematic
     /**
      * Display a world morph to all players around 64 blocks away from given point.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var morph = mappet.createMorph('{Name:"item"}');
+     *        var pos = s.getPosition();
+     *
+     *        c.getWorld().displayMorph(morph, 100, pos.x, pos.y + s.getHeight() + 0.5, pos.z);
+     *    }
      *
      * @param morph AbstractMorph
      * @param expiration number
@@ -3306,6 +4479,19 @@ declare interface IScriptWorld {
      * Display a world morph to all players at given point with rotation
      * some blocks away in this world.
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var morph = mappet.createMorph('{Name:"item"}');
+     *        var pos = s.getPosition();
+     *
+     *        var yaw = s.getYaw()
+     *        var pitch = s.getPitch()
+     *
+     *        c.getWorld().displayMorph(morph, 100, pos.x, pos.y + s.getHeight() + 0.5, pos.z, yaw, pitch, 90);
+     *    }
+     *
      * @param morph AbstractMorph
      * @param expiration number
      * @param x number
@@ -3321,6 +4507,19 @@ declare interface IScriptWorld {
      * Display a world morph to all players at given point with rotation
      * some blocks away in this world only to given player.
      *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var morph = mappet.createMorph('{Name:"item"}');
+     *        var pos = s.getPosition();
+     *
+     *        var yaw = s.getYaw()
+     *        var pitch = s.getPitch()
+     *
+     *        c.getWorld().displayMorph(morph, 100, pos.x, pos.y + s.getHeight() + 0.5, pos.z, yaw, pitch, 90, s);
+     *    }
+     *
      * @param morph AbstractMorph
      * @param expiration number
      * @param x number
@@ -3333,6 +4532,26 @@ declare interface IScriptWorld {
      * @returns {@link void}
      */
     displayMorph(morph: AbstractMorph, expiration: number, x: number, y: number, z: number, yaw: number, pitch: number, range: number, player: IScriptPlayer): void
+    /**
+     * Shoots a gun projectile entity.
+     *
+     * @example
+     *    var projectile = c.getWorld().shootBBGunProjectile(c.getSubject(), 547, 160, 497, 0, -90, '{Gun:{TickCommand:"particle heart ~ ~1 ~ 0.2 0.2 0.2 1",StoredAmmo:0,Ticking:1,Damage:1.0f,Projectile:{Meta:0b,Block:"minecraft:stone",Name:"block"},Gravity:0.0f}}')
+     *    c.scheduleScript(20, function (c){
+     *        projectile.executeCommand("summon tnt ~ ~ ~")
+     *        projectile.remove()
+     *    });
+     *
+     * @param shooter IScriptEntity
+     * @param x number
+     * @param y number
+     * @param z number
+     * @param yaw number
+     * @param pitch number
+     * @param gunPropsNbtString string
+     * @returns {@link IScriptEntity}
+     */
+    shootBBGunProjectile(shooter: IScriptEntity, x: number, y: number, z: number, yaw: number, pitch: number, gunPropsNbtString: string): IScriptEntity
 }
 
 declare interface IScriptServer {
@@ -3358,18 +4577,6 @@ declare interface IScriptServer {
      * @returns {@link IScriptWorld}
      */
     getWorld(dimension: number): IScriptWorld
-    /**
-     * Get fancy world at dimension ID.
-     *
-     * @example
-     *    var overworld = c.getServer().getFancyWorld(0);
-     *
-     *    // Do something with the world...
-     *
-     * @param dimension number
-     * @returns {@link IScriptFancyWorld}
-     */
-    getFancyWorld(dimension: number): IScriptFancyWorld
     /**
      * Get all entities matching giving target selector.
      *
@@ -3492,6 +4699,30 @@ declare interface IScriptServer {
      * @returns {@link void}
      */
     executeScript(scriptName: string, func: string): void
+    /**
+     * Execute a script with a given script name, a specified function and arguments.
+     *
+     * @example
+     *    c.getServer().executeScript("example_script.js", "func_with_context", c, 1, 2, 3);
+     *    c.getServer().executeScript("example_script.js", "func_without_context", 1, 2, 3);
+     *
+     *    // example_script.js
+     *    function func_with_context(c, arg1, arg2, arg3)
+     *    {
+     *        c.send("arg1: " + arg1 + ", arg2: " + arg2 + ", arg3: " + arg3);
+     *    }
+     *
+     *    function func_without_context(arg1, arg2, arg3)
+     *    {
+     *        print("arg1: " + arg1 + ", arg2: " + arg2 + ", arg3: " + arg3);
+     *    }
+     *
+     * @param scriptName string
+     * @param function string
+     * @param args Object
+     * @returns {@link void}
+     */
+    executeScript(scriptName: string, func: string, args: Object): void
 }
 
 declare interface IScriptRayTrace {
@@ -3544,230 +4775,6 @@ declare interface IScriptRayTrace {
     getHitPosition(): ScriptVector
 }
 
-declare interface IScriptFancyWorld {
-    /**
-     * Transforms a block to a falling block in specific coordinates.
-     *
-     * @example
-     *    c.getFancyWorld().explode(-2, 100, -2, 2, 100, 2, 100);
-     *
-     * @param x1 number
-     * @param y1 number
-     * @param z1 number
-     * @param x2 number
-     * @param y2 number
-     * @param z2 number
-     * @param blocksPercentage number
-     * @returns {@link List} - The falling block entities in a list.
-     */
-    explode(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, blocksPercentage: number): List<IScriptEntity>
-    /**
-     * Transforms a block to a falling block in specific coordinates.
-     *
-     * @example
-     *    c.getFancyWorld().explode(0, 100, 0, 3, 100);
-     *
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param radius number
-     * @param blocksPercentage number
-     * @returns {@link List} - The falling block entities in a list.
-     */
-    explode(x: number, y: number, z: number, radius: number, blocksPercentage: number): List<IScriptEntity>
-    /**
-     * Explodes the blocks in the range by teleporting them randomly in an explosive way.
-     *
-     * @example
-     *    c.getFancyWorld().tpExplode(0, 100, 0, 2, 100, 2, 100);
-     *
-     * @param x1 number
-     * @param y1 number
-     * @param z1 number
-     * @param x2 number
-     * @param y2 number
-     * @param z2 number
-     * @param blocksPercentage number
-     * @returns {@link void}
-     */
-    tpExplode(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, blocksPercentage: number): void
-    /**
-     * Explodes the blocks in the range by teleporting them randomly in an explosive way.
-     *
-     * @example
-     *    c.getFancyWorld().tpExplode(0, 100, 0, 3, 100);
-     *
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param radius number
-     * @param blocksPercentage number
-     * @returns {@link void}
-     */
-    tpExplode(x: number, y: number, z: number, radius: number, blocksPercentage: number): void
-    /**
-     * Sets a block in specific coordinates with a fancy effect.
-     *
-     * @param state IScriptBlockState
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param particleType EnumParticleTypes
-     * @param particlesAmount number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    setBlock(state: IScriptBlockState, x: number, y: number, z: number, particleType: EnumParticleTypes, particlesAmount: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Sets a block in specific coordinates with a fancy effect.
-     *
-     * @example
-     *    var block = mappet.createBlockState("minecraft:air", 1);
-     *    c.getFancyWorld().fill(5, block, 539, 151, 548, 555, 160, 570, 1, mappet.getParticleType("cloud"), 2, "", 0.3, 0.8);
-     *
-     * @param mode string
-     * @param state IScriptBlockState
-     * @param x1 number
-     * @param y1 number
-     * @param z1 number
-     * @param x2 number
-     * @param y2 number
-     * @param z2 number
-     * @param delayBetweenLayers number
-     * @param particleType EnumParticleTypes
-     * @param particlesPerBlock number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    fill(mode: string, state: IScriptBlockState, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, delayBetweenLayers: number, particleType: EnumParticleTypes, particlesPerBlock: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Sets a tile entity in specific block with a fancy effect.
-     *
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param blockState IScriptBlockState
-     * @param tileData INBTCompound
-     * @param particleType EnumParticleTypes
-     * @param particlesAmount number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    setTileEntity(x: number, y: number, z: number, blockState: IScriptBlockState, tileData: INBTCompound, particleType: EnumParticleTypes, particlesAmount: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Sets a tile entity in specific block with a fancy effect.
-     *
-     * @param mode string
-     * @param x1 number
-     * @param y1 number
-     * @param z1 number
-     * @param x2 number
-     * @param y2 number
-     * @param z2 number
-     * @param state IScriptBlockState
-     * @param tileData INBTCompound
-     * @param delayBetweenLayers number
-     * @param particleType EnumParticleTypes
-     * @param particlesPerBlock number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    fillTileEntities(mode: string, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, state: IScriptBlockState, tileData: INBTCompound, delayBetweenLayers: number, particleType: EnumParticleTypes, particlesPerBlock: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Clones a block to a specific coordinates with a fancy effect.
-     *
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param xNew number
-     * @param yNew number
-     * @param zNew number
-     * @param particleType EnumParticleTypes
-     * @param particlesAmount number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    clone(x: number, y: number, z: number, xNew: number, yNew: number, zNew: number, particleType: EnumParticleTypes, particlesAmount: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Clones a coordinates range to a specific coordinates with a fancy effect.
-     *
-     * @example
-     *    c.getFancyWorld().clone(2, 527, 150, 549, 536, 155, 545, 527, 160, 549, 20, mappet.getParticleType("cloud"), 20, "minecraft:block.wood.place", 0.3, 0.8);
-     *
-     * @param mode string
-     * @param x1 number
-     * @param y1 number
-     * @param z1 number
-     * @param x2 number
-     * @param y2 number
-     * @param z2 number
-     * @param xNew number
-     * @param yNew number
-     * @param zNew number
-     * @param delayBetweenLayers number
-     * @param particleType EnumParticleTypes
-     * @param particlesPerBlock number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    clone(mode: string, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, xNew: number, yNew: number, zNew: number, delayBetweenLayers: number, particleType: EnumParticleTypes, particlesPerBlock: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Loads a schematic to a specific coordinates with a fancy effect.
-     *
-     * @example
-     *    c.getFancyWorld().loadSchematic("5", "my_schematics", 500, 166, 569, 20, mappet.getParticleType("cloud"), 3, "minecraft:block.wood.place", 0.3, 0.8);
-     *
-     * @param mode string
-     * @param name string
-     * @param target_x number
-     * @param target_y number
-     * @param target_z number
-     * @param delayBetweenLayers number
-     * @param particleType EnumParticleTypes
-     * @param particlesPerBlock number
-     * @param soundEvent string
-     * @param volume number
-     * @param pitch number
-     * @returns {@link void}
-     */
-    loadSchematic(mode: string, name: string, target_x: number, target_y: number, target_z: number, delayBetweenLayers: number, particleType: EnumParticleTypes, particlesPerBlock: number, soundEvent: string, volume: number, pitch: number): void
-    /**
-     * Spawns a NPC in specific coordinates with a fancy effect.
-     *
-     * @example
-     *    c.getFancyWorld().spawnNpc("McHorse", "default", 500, 166, 569, 0, 90, 0, mappet.getParticleType("cloud"), 0.1, 20, "minecraft:entity.zombie.infect", 0.3, 0.8);
-     *
-     * @param id string
-     * @param state string
-     * @param x number
-     * @param y number
-     * @param z number
-     * @param yaw number
-     * @param pitch number
-     * @param yawHead number
-     * @param particleType EnumParticleTypes
-     * @param particleSpeed number
-     * @param particlesAmount number
-     * @param soundEvent string
-     * @param volume number
-     * @param volumePitch number
-     * @returns {@link IScriptNpc} - The spawned NPC.
-     */
-    spawnNpc(id: string, state: string, x: number, y: number, z: number, yaw: number, pitch: number, yawHead: number, particleType: EnumParticleTypes, particleSpeed: number, particlesAmount: number, soundEvent: string, volume: number, volumePitch: number): IScriptNpc
-}
-
 declare interface IScriptFactory {
     readonly logger: IMappetLogger
     /**
@@ -3785,6 +4792,19 @@ declare interface IScriptFactory {
      * @returns {@link IScriptBlockState}
      */
     createBlockState(blockId: string, meta: number): IScriptBlockState
+    /**
+     * Create a block state that can with the default meta value.
+     *
+     * @example
+     *    var fence = mappet.createBlockState("minecraft:fence");
+     *
+     *    // minecraft:fence 0
+     *    c.send(fence.getBlockId() + " " + fence.getMeta());
+     *
+     * @param blockId string
+     * @returns {@link IScriptBlockState}
+     */
+    createBlockState(blockId: string): IScriptBlockState
     /**
      * Create an empty NBT compound.
      *
@@ -3908,7 +4928,7 @@ declare interface IScriptFactory {
      *
      * @param nbt string
      * @returns {@link IScriptItemStack} - an item stack from the string NBT data, or an empty item stack
-         if the data doesn't have a valid reference to an existing item
+ if the data doesn't have a valid reference to an existing item
      */
     createItemNBT(nbt: string): IScriptItemStack
     /**
@@ -3923,7 +4943,7 @@ declare interface IScriptFactory {
      *
      * @param compound INBTCompound
      * @returns {@link IScriptItemStack} - an item stack from the NBT data, or an empty item stack if the
-         data doesn't have a valid reference to an existing item
+ data doesn't have a valid reference to an existing item
      */
     createItem(compound: INBTCompound): IScriptItemStack
     /**
@@ -3937,7 +4957,7 @@ declare interface IScriptFactory {
      *
      * @param itemId string
      * @returns {@link IScriptItemStack} - an item stack with an item specified by ID, or an empty item
-         stack if the block doesn't exist
+ stack if the block doesn't exist
      */
     createItem(itemId: string): IScriptItemStack
     /**
@@ -3952,7 +4972,7 @@ declare interface IScriptFactory {
      * @param itemId string
      * @param count number
      * @returns {@link IScriptItemStack} - an item stack with an item specified by ID, or an empty item
-         stack if the block doesn't exist
+ stack if the block doesn't exist
      */
     createItem(itemId: string, count: number): IScriptItemStack
     /**
@@ -3968,7 +4988,7 @@ declare interface IScriptFactory {
      * @param count number
      * @param meta number
      * @returns {@link IScriptItemStack} - an item stack with an item specified by ID, or an empty item
-         stack if the block doesn't exist
+ stack if the block doesn't exist
      */
     createItem(itemId: string, count: number, meta: number): IScriptItemStack
     /**
@@ -3982,7 +5002,7 @@ declare interface IScriptFactory {
      *
      * @param blockId string
      * @returns {@link IScriptItemStack} - an item stack with an item specified by ID, or an empty item
-          stack if the block doesn't exist
+ stack if the block doesn't exist
      */
     createBlockItem(blockId: string): IScriptItemStack
     /**
@@ -3997,7 +5017,7 @@ declare interface IScriptFactory {
      * @param blockId string
      * @param count number
      * @returns {@link IScriptItemStack} - an item stack with an item specified by ID, or an empty item
-         stack if the block doesn't exist
+ stack if the block doesn't exist
      */
     createBlockItem(blockId: string, count: number): IScriptItemStack
     /**
@@ -4013,7 +5033,7 @@ declare interface IScriptFactory {
      * @param count number
      * @param meta number
      * @returns {@link IScriptItemStack} - an item stack with block specified by ID, or an empty item
-         stack if the block doesn't exist
+ stack if the block doesn't exist
      */
     createBlockItem(blockId: string, count: number, meta: number): IScriptItemStack
     /**
@@ -4286,7 +5306,7 @@ declare interface IScriptFactory {
      * @example
      *    var style = mappet.style("dark_blue", "bold", "underline");
      *
-     *    c.send(colorCode + "This text is in blue!");
+     *    c.send(style + "This text is in blue!");
      *
      * @param codes string
      * @returns {@link string}
@@ -4298,6 +5318,31 @@ declare interface IScriptFactory {
      * @returns {@link IMappetLogger}
      */
     getLogger(): IMappetLogger
+    /**
+     * Return a mappet entity/player/npc by given minecraft entity.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var s = c.getSubject();
+     *        var minecraftPlayer = s.minecraftPlayer;
+     *        var mappetPlayer = mappet.getMappetEntity(minecraftPlayer);
+     *        c.send(mappetPlayer.name);
+     *    }
+     *
+     * @param minecraftEntity Entity
+     * @returns {@link IScriptEntity}
+     */
+    getMappetEntity(minecraftEntity: Entity): IScriptEntity
+    /**
+     * Create a ScriptVector.
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @returns {@link ScriptVector}
+     */
+    vector(x: number, y: number, z: number): ScriptVector
     /**
      * Create an empty (0, 0) 2D vector.
      *
@@ -4457,14 +5502,37 @@ declare interface IScriptFactory {
      */
     matrix4(m: Matrix4d): Matrix4d
     /**
+     * Create a bounding box.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var subject = c.getSubject();
+     *        var subjectPosition = subject.getPosition();
+     *        var box = mappet.box(-10, 4, -10, 10, 6, 10);
+     *        if (box.contains(subjectPosition)){
+     *            c.send("the player in in the box")
+     *        }
+     *    }
+     *
+     * @param minX number
+     * @param minY number
+     * @param minZ number
+     * @param maxX number
+     * @param maxY number
+     * @param maxZ number
+     * @returns {@link ScriptBox}
+     */
+    box(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): ScriptBox
+    /**
      * Determines whether a point is located inside a bounding volume specified by two corners.
      * This method works with different vector types (2D, 3D, and 4D).
      *
      * @example
      *    var pos = c.getSubject().getPosition();
-     *    var point = mappet.Vector3(pos.x, pos.y, pos.z);
-     *    var bound1 = mappet.Vector3(0, 0, 0);
-     *    var bound2 = mappet.Vector3(10, 10, 10);
+     *    var point = mappet.vector3(pos.x, pos.y, pos.z);
+     *    var bound1 = mappet.vector3(0, 0, 0);
+     *    var bound2 = mappet.vector3(10, 10, 10);
      *    var isInside = mappet.isPointInBounds(point, bound1, bound2);
      *    c.send("Is the point inside the bounding volume? " + isInside);
      *
@@ -4481,6 +5549,27 @@ declare interface IScriptFactory {
      * @returns {@link INBTCompound} - The INBTCompound representation of the object or null if the object is not of the expected types.
      */
     toNBT(object: Object): INBTCompound
+    /**
+     * Formates strings (placeholders).
+     *
+     * @example
+     *    // Example:
+     *    var name = "Steve";
+     *    var age = 18;
+     *    var message = mappet.format("Hello %s, you are %d years old!", name, age);
+     *    c.send(message);
+     *
+     *    // You can also use the positional arguments:
+     *    var s = c.getSubject();
+     *    var pos = s.getPosition();
+     *    var message = mappet.format("Hello %1$s, you are in x:%2$.2f, y:%3$.2f, z:%4$.2f!", s.getName(), pos.x, pos.y, pos.z);
+     *    s.send(message);
+     *
+     * @param format string
+     * @param args Object
+     * @returns {@link string} - formatted string
+     */
+    format(format: string, args: Object): string
 }
 
 declare interface IScriptEvent {
@@ -4491,7 +5580,6 @@ declare interface IScriptEvent {
     readonly player: IScriptPlayer
     readonly NPC: IScriptNpc
     readonly world: IScriptWorld
-    readonly fancyWorld: IScriptFancyWorld
     readonly server: IScriptServer
     readonly values: Map
     /**
@@ -4536,12 +5624,6 @@ declare interface IScriptEvent {
      * @returns {@link IScriptWorld}
      */
     getWorld(): IScriptWorld
-    /**
-     * Get the fancy world in which this event happened.
-     *
-     * @returns {@link IScriptFancyWorld}
-     */
-    getFancyWorld(): IScriptFancyWorld
     /**
      * Get the server in which this event happened.
      *
@@ -4715,7 +5797,7 @@ declare interface IScriptEvent {
      *
      * @param command string
      * @returns {@link number} - How many successful commands were run. 0 - command errored, 1 - command was successful,
-      2 or above - multiple commands were executed using target selectors.
+ 2 or above - multiple commands were executed using target selectors.
      */
     executeCommand(command: string): number
     /**
@@ -4962,6 +6044,20 @@ declare interface IScriptItemStack {
      * @returns {@link void}
      */
     setUnbreakable(unbreakable: boolean): void
+    /**
+     * Add/remove more items to the stack.
+     *
+     * @param amount number
+     * @returns {@link void}
+     */
+    add(amount: number): void
+    /**
+     * Check if this item stack is equal to another item stack.
+     *
+     * @param other ScriptItemStack
+     * @returns {@link boolean}
+     */
+    equals(other: IScriptItemStack): boolean
 }
 
 declare interface IScriptItem {
@@ -5850,6 +6946,107 @@ declare interface IMappetStates {
     keys(): Set<string>
 }
 
+declare interface IMappetSchematic {
+    /**
+     * Uses to copy blocks from world to schematic.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var schematic = c.world.createSchematic();
+     *        schematic.loadFromWorld(0, 4, 0, 4, 8, 4).saveToFile("mySchematic").place(0, 4, 4).place(0, 4, 8);
+     *    }
+     *
+     * @param x1 number
+     * @param y1 number
+     * @param z1 number
+     * @param x2 number
+     * @param y2 number
+     * @param z2 number
+     * @returns {@link IMappetSchematic}
+     */
+    loadFromWorld(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): IMappetSchematic
+    /**
+     * Places schematic's blocks into the world.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *         var schematic = c.world.createSchematic();
+     *         schematic.loadFromFile("myTestSchematic").place(0, 0, 0, true, true);
+     *    }
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @param replaceBlocks boolean
+     * @param placeAir boolean
+     * @returns {@link IMappetSchematic}
+     */
+    place(x: number, y: number, z: number, replaceBlocks: boolean, placeAir: boolean): IMappetSchematic
+    /**
+     * Places schematic's blocks into the world.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *         var schematic = c.world.createSchematic();
+     *         schematic.loadFromFile("myTestSchematic").place(0, 0, 0, true);
+     *    }
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @param replaceBlocks boolean
+     * @returns {@link IMappetSchematic}
+     */
+    place(x: number, y: number, z: number, replaceBlocks: boolean): IMappetSchematic
+    /**
+     * Places schematic's blocks into the world.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *         var schematic = c.world.createSchematic();
+     *         schematic.loadFromFile("myTestSchematic").place(0, 0, 0);
+     *    }
+     *
+     * @param x number
+     * @param y number
+     * @param z number
+     * @returns {@link IMappetSchematic}
+     */
+    place(x: number, y: number, z: number): IMappetSchematic
+    /**
+     * Uses to save schematic.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var schematic = c.world.createSchematic();
+     *        schematic.loadFromWorld(0, 4, 0, 4, 8, 4).saveToFile("mySchematic");
+     *    }
+     *
+     * @param name string
+     * @returns {@link IMappetSchematic}
+     */
+    saveToFile(name: string): IMappetSchematic
+    /**
+     * Uses to get schematic from file.
+     *
+     * @example
+     *    function main(c)
+     *    {
+     *        var schematic = c.world.createSchematic();
+     *        schematic.loadFromFile("mySchematic").place(0, 4, 4);
+     *    }
+     *
+     * @param name string
+     * @returns {@link IMappetSchematic}
+     */
+    loadFromFile(name: string): IMappetSchematic
+}
+
 declare interface IMappetQuests {
     readonly ids: Set<string>
     /**
@@ -5858,8 +7055,8 @@ declare interface IMappetQuests {
      * @example
      *    if (c.getSubject().getQuests().has("important_quest"))
      *    {
-     *        // § is section symbol
-     *        c.getSubject().send("You can't do this until you finish §6Important quest§r!");
+     *        // � is section symbol
+     *        c.getSubject().send("You can't do this until you finish �6Important quest�r!");
      *    }
      *
      * @param id string
@@ -5881,7 +7078,7 @@ declare interface IMappetQuests {
      *
      * @param id string
      * @returns {@link boolean} - <code>true</code> if a quest was successfully added, <code>false</code> if
-         player has already this quest, or if the quest doesn't exist.
+ player has already this quest, or if the quest doesn't exist.
      */
     add(id: string): boolean
     /**
@@ -5912,7 +7109,7 @@ declare interface IMappetQuests {
      *
      * @param id string
      * @returns {@link boolean} - <code>true</code> if player was rewarded and quest was removed from the
-         quests list, <code>false</code> if the quest by given ID isn't present.
+ quests list, <code>false</code> if the quest by given ID isn't present.
      */
     complete(id: string): boolean
     /**
@@ -5926,7 +7123,7 @@ declare interface IMappetQuests {
      *
      * @param id string
      * @returns {@link boolean} - <code>true</code> if the quest was removed, <code>false</code> if the
-         quest wasn't even present in these quests.
+ quest wasn't even present in these quests.
      */
     decline(id: string): boolean
     /**
@@ -6811,6 +8008,20 @@ declare interface UIStackComponent extends UIComponent {
      * @returns {@link UIStackComponent}
      */
     stack(stack: ItemStack): this
+    /**
+     * Determines whether to show the trackpad with the number of items setting.
+     *
+     * @param flag boolean
+     * @returns {@link UIStackComponent}
+     */
+    count(flag: boolean): this
+    /**
+     * Determines whether to show the search button.
+     *
+     * @param flag boolean
+     * @returns {@link UIStackComponent}
+     */
+    search(flag: boolean): this
 }
 
 declare interface UIParentComponent extends UIComponent {
@@ -8082,7 +9293,7 @@ declare interface JavaAccessor {
      * @param className string
      * @returns {@link any}
      */
-    type(className: string): any
+    type(className: string): MinecraftClass
 }
 
 declare const Java: JavaAccessor;
